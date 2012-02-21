@@ -1,0 +1,13 @@
+- 3 iteradores distintos
+- las inserciones tienen que ser transparentes, solamente hay que meter el tipo
+  de dato que se quiera. El resto de cosas las manejamos con iteradores.
+- poder obtener el padre y cada uno de los hijos para cada nodo
+- devolver el iterador del nodo que se quiera
+- copy-on-write
+- podas y copias a partir de nodos, los nodos tienen que estar señalados por iteradores
+
+*** Hecho ***
+- Iterador de arbol acabado <- No funciona el post incremento
+- Iterador de preorden acabado
+- Nodo de arbol acabado
+- Falta los otros 2 iteradores y acabar el arbol

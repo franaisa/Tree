@@ -1,5 +1,5 @@
-#ifndef _TREE_ITERATOR_H_
-#define _TREE_ITERATOR_H_
+#ifndef __TREE_ITERATOR_H__
+#define __TREE_ITERATOR_H__
 
 #include "TreeNode.h"
 

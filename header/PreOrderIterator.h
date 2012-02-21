@@ -1,5 +1,5 @@
-#ifndef _PREORDER_ITERATOR_H_
-#define _PREORDER_ITERATOR_H_
+#ifndef __PREORDER_ITERATOR_H__
+#define __PREORDER_ITERATOR_H__
 
 #include "TreeNode.h"
 #include "Tree.h"

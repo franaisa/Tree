@@ -1,5 +1,5 @@
-#ifndef _TREE_NODE_H_
-#define _TREE_NODE_H_
+#ifndef __TREE_NODE_H__
+#define __TREE_NODE_H__
 
 #include <iostream>
 #include <vector>
