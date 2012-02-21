@@ -1,14 +1,18 @@
-#ifndef _TREE_H_
-#define _TREE_H_
+#ifndef __TREE_H__
+#define __TREE_H__
 
 #include "TreeNode.h"
 #include "TreeIterator.h"
 #include <iterator>
+#include <map>
 #include <new>
 #include <stack>
 
+
+// Forward declarations
 template <class T>
 class TreeIterator;
+
 
 // *****************************************************************************
 //                                  TREE HEADER
@@ -20,7 +24,6 @@ class Tree {
    public:
       class PreOrderIterator;
       class PostOrderIterator;
-      class InOrderIterator;
 
       Tree();
       Tree(const DataType& data);
@@ -30,8 +33,10 @@ class Tree {
 
       Tree<DataType>& operator=(const Tree<DataType>& rhs);
 
+      // Return iterator to root
       void setRoot(const DataType& data);
 
+      // Return iterator to child inserted
       void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data);
       void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data);
       //void insertChild(const TreeIterator<DataType>& parent, const DataType& data);
@@ -48,22 +53,27 @@ class Tree {
       // erase un nodo
       // tree poda(iterator) prune
       // void corte(iterator) chop
-      // graft
+      void chop(TreeIterator<DataType>& rootNode);
+      // graft un tree
 
       void prePrint() {
-         PreOrderIterator it;
-         for(it = preBegin(); it != preEnd(); ++it) {
-            std::cout << *it << " ";
+         if(_root != NULL) {
+            PreOrderIterator it;
+            for(it = preBegin(); it != preEnd(); ++it) {
+               std::cout << *it << " ";
+            }
+            std::cout << std::endl;
          }
-         std::cout << std::endl;
       }
 
       void postPrint() {
-         PostOrderIterator it;
-         for(it = postBegin(); it != postEnd(); ++it) {
-            std::cout << *it << " ";
+         if(_root != NULL) {
+            PostOrderIterator it;
+            for(it = postBegin(); it != postEnd(); ++it) {
+               std::cout << *it << " ";
+            }
+            std::cout << std::endl;
          }
-         std::cout << std::endl;
       }
 
    protected:
@@ -74,6 +84,7 @@ class Tree {
       unsigned int _levels;
 
       void clone(const Tree<DataType>& source);
+      inline void clean();
 };
 
 
@@ -89,7 +100,7 @@ Tree<DataType>::Tree() : _root(NULL), _nNodes(0), _levels(0) {
 
 //______________________________________________________________________________
 
-// DEPRECATED
+// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
 Tree<DataType>::Tree(const DataType& data) : _nNodes(1), _levels(1) {
    _root = new(std::nothrow) TreeNode<DataType>(data);
@@ -103,33 +114,29 @@ Tree<DataType>::Tree(const DataType& data) : _nNodes(1), _levels(1) {
 
 // DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
-Tree<DataType>::Tree(const Tree<DataType>& source) : _nNodes(source._nNodes), _levels(source._levels) {
-   // Recorrer el arbol cogiendo aquellos nodos que tienen descendientes y crear
-   // memoria para el nodo y sus descendientes. Copiando los valores de cada uno
-   // luego desplazarnos al siguiente descenciente que tenga descendientes y
-   // repetir el proceso
+Tree<DataType>::Tree(const Tree<DataType>& source) : _root(NULL), _nNodes(source._nNodes), _levels(source._levels) {
+   clone(source);
 }
 
 //______________________________________________________________________________
 
-// DEPRECATED
 template <class DataType>
 Tree<DataType>::~Tree() {
-   // Use post-order iterator to erase each node
-   if(_root != NULL) {
-      PostOrderIterator postIt;
-      for(postIt = postBegin(); postIt != postEnd(); ++postIt) {
-         delete postIt.getPointer();
-      }
-   }
+   clean();
 }
 
 //______________________________________________________________________________
 
-// DEPRECATED
+// DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
 Tree<DataType>& Tree<DataType>::operator=(const Tree<DataType>& rhs) {
-   // TO BE IMPLEMENTED
+   if(this != &rhs) {
+      _nNodes = rhs._nNodes;
+      _levels = rhs._levels;
+      clone(rhs);
+   }
+
+   return *this;
 }
 
 //______________________________________________________________________________
@@ -153,6 +160,7 @@ void Tree<DataType>::setRoot(const DataType& data) {
 
 //______________________________________________________________________________
 
+// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
 void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) {
    TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
@@ -166,6 +174,7 @@ void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const 
 
 //______________________________________________________________________________
 
+// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
 void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) {
    TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
@@ -214,11 +223,260 @@ unsigned int Tree<DataType>::size() const {
 
 //______________________________________________________________________________
 
-// DEPRECATED
+// DEPRECATED IF THE ITERATOR PASSED IS A NULL POINTER NOTHING HAPPENS
+template <class DataType>
+void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
+   TreeNode<DataType>* rootPtr(rootNode.getPointer());
+   TreeNode<DataType>* parentPtr(rootPtr->parent());
+
+   if(parentPtr != NULL) {
+      // Kill the given children (rootPtr)
+      
+   }
+
+   for(PostOrderIterator postIt(rootPtr); postIt != postEnd(); ++postIt) {
+      delete postIt.getPointer();
+   }
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
+// To be implemented as a copy-on-write
 template <class DataType>
 void Tree<DataType>::clone(const Tree<DataType>& source) {
+   // If the tree already had data stored, delete it
+   if(_root != NULL) {
+      clean();
+   }
 
+   // This map is going to tell us which node is the parent of who
+   std::map< TreeNode<DataType>*, TreeNode<DataType>* > parentMap;
+   parentMap[NULL] = NULL;
+
+   // Allocate memory for the new root
+   _root = new(std::nothrow) TreeNode<DataType>(*source.preBegin());
+   parentMap[source._root] = _root;
+
+   for(PreOrderIterator srcIt = source.preBegin(), myIt = preBegin(); srcIt != source.preEnd(); ++srcIt, ++myIt) {
+      // Temp variables
+      TreeNode<DataType>* myPt = myIt.getPointer();
+      TreeNode<DataType>* srcPt = srcIt.getPointer();
+      int nChildren = srcPt->nChildren();
+      PreOrderIterator tmpParent;
+      srcIt.parent(tmpParent);
+
+      // Link the current node to the corresponding parent
+      myPt->_parent = parentMap[tmpParent.getPointer()];
+
+      // Copy node data
+      *myIt = *srcIt;
+
+      // Allocate memory for descendants if any and put them in the dictionary
+      myPt->_children.resize(nChildren);
+      for(int i = 0; i < nChildren; ++i) {
+         myPt->_children[i] = new(std::nothrow) TreeNode<DataType>;
+         parentMap[srcPt->_children[i]] = myPt->_children[i];
+      }
+   }
 }
+
+//______________________________________________________________________________
+
+template <class DataType>
+void Tree<DataType>::clean() {
+   // Use post-order iterator to erase each node
+   if(_root != NULL) {
+      for(PostOrderIterator postIt(postBegin()); postIt != postEnd(); ++postIt) {
+         std::cout << "Destructing " << *postIt << std::endl;
+         //delete postIt.getPointer();
+      }
+
+      _root = NULL;
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// *****************************************************************************
+//                            TREE-ITERATOR HEADER
+// *****************************************************************************
+
+template <class DataType>
+class TreeIterator {
+   public:
+      TreeIterator();
+      TreeIterator(const TreeIterator<DataType>& source);
+
+      virtual ~TreeIterator();
+
+      TreeIterator<DataType>& operator=(const TreeIterator<DataType>& rhs);
+      TreeIterator<DataType>& operator=(TreeNode<DataType>* rhs);
+
+      // Abstract
+      virtual TreeIterator<DataType>& operator++() = 0;
+      TreeIterator<DataType> operator++(int notUsed);
+
+      inline bool operator==(const TreeIterator<DataType>& rhs) const;
+      inline bool operator!=(const TreeIterator<DataType>& rhs) const;
+
+      inline DataType* operator->() const;
+      inline DataType& operator*() const;
+      // Careful when using it, the pointer returned MUST NOT be modified
+      inline TreeNode<DataType>* getPointer();
+      inline void setPointer(TreeNode<DataType>* newPointer);
+
+      // We return a reference to a TreeIterator to be able to return a derived
+      // class.
+      // THIS TWO METHODS MUST NEVER BE USED TO MODIFY THE RETURNED VALUE
+      // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
+      virtual TreeIterator<DataType>& parent() = 0;
+      virtual TreeIterator<DataType>& children(int child) = 0;
+   protected:
+      TreeIterator(TreeNode<DataType>* data);
+   private:
+      friend class Tree<DataType>;
+
+      TreeNode<DataType>* _pointer;
+
+      inline void clone(const TreeIterator<DataType>& rhs);
+};
+
+
+// *****************************************************************************
+//                       TREE-ITERATOR IMPLEMENTATION
+// *****************************************************************************
+
+
+template <class DataType>
+TreeIterator<DataType>::TreeIterator() : _pointer(NULL) {
+   // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>::TreeIterator(TreeNode<DataType>* data) : _pointer(data) {
+   // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>::TreeIterator(const TreeIterator<DataType>& source) : _pointer(source._pointer) {
+   // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>::~TreeIterator() {
+   // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& TreeIterator<DataType>::operator=(const TreeIterator<DataType>& rhs) {
+   if(this != &rhs)
+      clone(rhs);
+
+   return *this;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& TreeIterator<DataType>::operator=(TreeNode<DataType>* rhs) {
+   if(_pointer != rhs) {
+      _pointer = rhs;
+   }
+
+   return *this;;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType> TreeIterator<DataType>::operator++(int notUsed) {
+   TreeIterator<DataType> tmp(*this);
+   operator++();
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+bool TreeIterator<DataType>::operator==(const TreeIterator<DataType>& rhs) const {
+   return _pointer == rhs._pointer;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+bool TreeIterator<DataType>::operator!=(const TreeIterator<DataType>& rhs) const {
+   return _pointer != rhs._pointer;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+DataType* TreeIterator<DataType>::operator->() const {
+   return &(_pointer->_data);
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+DataType& TreeIterator<DataType>::operator*() const {
+   return *(operator->());
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+void TreeIterator<DataType>::setPointer(TreeNode<DataType>* newPointer) {
+   _pointer = newPointer;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeNode<DataType>* TreeIterator<DataType>::getPointer() {
+   return _pointer;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+void TreeIterator<DataType>::clone(const TreeIterator<DataType>& rhs) {
+   _pointer = rhs._pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // *****************************************************************************
 //                            PRE-ORDER ITERATOR HEADER
@@ -229,17 +487,22 @@ template <class DataType>
 class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
    public:
       PreOrderIterator();
-      PreOrderIterator(TreeNode<DataType>* data);
       PreOrderIterator(const PreOrderIterator& source);
 
       virtual ~PreOrderIterator();
 
-      PreOrderIterator& operator=(const PreOrderIterator& rhs);
+      PreOrderIterator& operator=(const TreeIterator<DataType>& rhs);
 
       virtual PreOrderIterator& operator++();
-      virtual void parent(TreeIterator<DataType>& iterator);
-      virtual void children(int child, TreeIterator<DataType>& iterator);
+
+      virtual TreeIterator<DataType>& parent();
+      virtual TreeIterator<DataType>& children(int child);
    private:
+      friend PreOrderIterator Tree<DataType>::preBegin() const;
+      friend PreOrderIterator Tree<DataType>::preEnd() const;
+      
+      PreOrderIterator(TreeNode<DataType>* data);
+
       std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
 };
 
@@ -278,7 +541,7 @@ Tree<DataType>::PreOrderIterator::~PreOrderIterator() {
 //______________________________________________________________________________
 
 template <class DataType>
-typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::operator=(const PreOrderIterator& rhs) {
+typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::operator=(const TreeIterator<DataType>& rhs) {
    if(this != &rhs) {
       TreeIterator<DataType>::operator=(rhs);
 
@@ -350,43 +613,33 @@ typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::ope
 //______________________________________________________________________________
 
 template <class DataType>
-void Tree<DataType>::PreOrderIterator::parent(TreeIterator<DataType>& iterator) {
-   iterator = Tree<DataType>::PreOrderIterator(TreeIterator<DataType>::_pointer->parent());
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::parent() {
+   static Tree<DataType>::PreOrderIterator tmp;
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
+   return tmp;
 }
 
 //______________________________________________________________________________
 
+// DEPRECATED Child can't be out of bounds
 template <class DataType>
-void Tree<DataType>::PreOrderIterator::children(int child, TreeIterator<DataType>& iterator) {
-   if(TreeIterator<DataType>::_pointer->_children.size() > 0)
-      iterator = Tree<DataType>::PreOrderIterator(TreeIterator<DataType>::_pointer->children(child));
-   else {
-      iterator = Tree<DataType>::PreOrderIterator(NULL);
-   }
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::children(int child) {
+   static Tree<DataType>::PreOrderIterator tmp;
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->_children[child]);
+   return tmp;
 }
 
-// *****************************************************************************
-//                            IN-ORDER ITERATOR HEADER 
-// *****************************************************************************
 
 
-// It behaves differently for binary trees
-template <class DataType>
-class Tree<DataType>::InOrderIterator : public std::iterator<std::forward_iterator_tag, DataType> {
-   public:
-      InOrderIterator() {};
-      InOrderIterator(const InOrderIterator& other);
 
-      InOrderIterator& operator++();
-      InOrderIterator operator++(int notUsed);
 
-      bool operator==(const InOrderIterator& rhs);
-      bool operator!=(const InOrderIterator& rhs);
 
-      int& operator*();
-   private:
-      TreeNode<DataType>* pointer;
-};
+
+
+
+
+
+
 
 
 // *****************************************************************************
@@ -398,8 +651,9 @@ template <class DataType>
 class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
    public:
       PostOrderIterator();
-      PostOrderIterator(TreeNode<DataType>* data);
-      PostOrderIterator(const PostOrderIterator& other);
+      // If we have to return an iterator from a function
+      // DO NOT ever construct it using this constructor, use the one that's private
+      PostOrderIterator(const PostOrderIterator& source);
 
       virtual ~PostOrderIterator();
 
@@ -407,12 +661,25 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
 
       virtual PostOrderIterator& operator++();
 
-      virtual void parent(TreeIterator<DataType>& iterator);
-      virtual void children(int child, TreeIterator<DataType>& iterator);
+      void printStack() {
+         std::stack< std::pair<TreeNode<DataType>*, int> > auxStack(_pathStack);
 
-      void printStack();
+         std::cout << "\nStack state: " << std::endl;
+         while(!auxStack.empty()) {
+            std::cout << "(" << *auxStack.top().first << ", " << auxStack.top().second << ")" << std::endl;
+            auxStack.pop();
+         }
+         std::cout << std::endl;
+      }
 
+      virtual TreeIterator<DataType>& parent();
+      virtual TreeIterator<DataType>& children(int child);
    private:
+      friend PostOrderIterator Tree<DataType>::postBegin() const;
+      friend PostOrderIterator Tree<DataType>::postEnd() const;
+      
+      PostOrderIterator(TreeNode<DataType>* data);
+
       std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
 };
 
@@ -430,14 +697,21 @@ Tree<DataType>::PostOrderIterator::PostOrderIterator() {
 
 template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator(TreeNode<DataType>* data) : TreeIterator<DataType>(data) {
+   std::cout << "Pringao" << std::endl;
    _pathStack.push(std::pair<TreeNode<DataType>*, int>(TreeIterator<DataType>::getPointer(), 0));
 }
 
 //______________________________________________________________________________
 
 template <class DataType>
-Tree<DataType>::PostOrderIterator::PostOrderIterator(const PostOrderIterator& source) : TreeIterator<DataType>(source), _pathStack(source._pathStack) {
-   // Nothing to do
+Tree<DataType>::PostOrderIterator::PostOrderIterator(const PostOrderIterator& source) : TreeIterator<DataType>(source) {
+   TreeNode<DataType>* sourcePtr(TreeIterator<DataType>::getPointer());
+   std::cout << "Hola" << std::endl;
+   if(sourcePtr != NULL) {
+      _pathStack.push(std::pair<TreeNode<DataType>*, int>(sourcePtr, 0));
+      operator++();
+      printStack();
+   }
 }
 
 //______________________________________________________________________________
@@ -460,8 +734,11 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
       }
 
       // Put the first element to be printed at the top of the stack
-      _pathStack.push(std::pair<TreeNode<DataType>*, int>(TreeIterator<DataType>::getPointer(), 0));
-      operator++();
+      TreeNode<DataType>* rhsPtr(TreeIterator<DataType>::getPointer());
+      if(rhsPtr != NULL) {
+         _pathStack.push(std::pair<TreeNode<DataType>*, int>(rhsPtr, 0));
+         operator++();
+      }
    }
 
    return *this;
@@ -494,157 +771,20 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
 //______________________________________________________________________________
 
 template <class DataType>
-void Tree<DataType>::PostOrderIterator::parent(TreeIterator<DataType>& iterator) {
-   iterator = Tree<DataType>::PostOrderIterator(TreeIterator<DataType>::_pointer->parent());
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-void Tree<DataType>::PostOrderIterator::children(int child, TreeIterator<DataType>& iterator) {
-   if(TreeIterator<DataType>::_pointer->_children.size() > 0)
-      iterator = Tree<DataType>::PostOrderIterator(TreeIterator<DataType>::_pointer->children(child));
-   else {
-      iterator = Tree<DataType>::PostOrderIterator(NULL);
-   }
-}
-
-// *****************************************************************************
-//                            TREE-ITERATOR HEADER
-// *****************************************************************************
-
-template <class DataType>
-class TreeIterator {
-   public:
-      TreeIterator();
-      TreeIterator(TreeNode<DataType>* data);
-      TreeIterator(const TreeIterator<DataType>& other);
-
-      virtual ~TreeIterator();
-
-      TreeIterator<DataType>& operator=(const TreeIterator<DataType>& rhs);
-
-      // Abstract
-      virtual TreeIterator<DataType>& operator++() = 0;
-      TreeIterator<DataType> operator++(int notUsed);
-
-      inline bool operator==(const TreeIterator<DataType>& rhs) const;
-      inline bool operator!=(const TreeIterator<DataType>& rhs) const;
-
-      inline DataType* operator->() const;
-      inline DataType& operator*() const;
-      // Careful when using it, the pointer returned MUST NOT be modified
-      inline TreeNode<DataType>* getPointer();
-      inline void setPointer(TreeNode<DataType>* newPointer);
-
-      virtual void parent(TreeIterator<DataType>& iterator) = 0;
-      virtual void children(int child, TreeIterator<DataType>& iterator) = 0;
-   private:
-      friend class Tree<DataType>;
-
-      TreeNode<DataType>* _pointer;
-
-      inline void clone(const TreeIterator<DataType>& rhs);
-};
-
-
-// *****************************************************************************
-//                       TREE-ITERATOR IMPLEMENTATION
-// *****************************************************************************
-
-
-template <class DataType>
-TreeIterator<DataType>::TreeIterator() : _pointer(NULL) {
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>::TreeIterator(TreeNode<DataType>* data) : _pointer(data) {
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>::TreeIterator(const TreeIterator<DataType>& source) : _pointer(source._pointer) {
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>::~TreeIterator() {
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>& TreeIterator<DataType>::operator=(const TreeIterator<DataType>& rhs) {
-   if(this != &rhs)
-      clone(rhs);
-
-   return *this;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType> TreeIterator<DataType>::operator++(int notUsed) {
-   TreeIterator<DataType> tmp(*this);
-   operator++();
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::parent() {
+   static Tree<DataType>::PostOrderIterator tmp;
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
    return tmp;
 }
 
 //______________________________________________________________________________
 
+// DEPRECATED Child can't be out of bounds
 template <class DataType>
-bool TreeIterator<DataType>::operator==(const TreeIterator<DataType>& rhs) const {
-   return _pointer == rhs._pointer;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-bool TreeIterator<DataType>::operator!=(const TreeIterator<DataType>& rhs) const {
-   return _pointer != rhs._pointer;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-DataType* TreeIterator<DataType>::operator->() const {
-   return &(_pointer->_data);
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-DataType& TreeIterator<DataType>::operator*() const {
-   return *(operator->());
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-void TreeIterator<DataType>::setPointer(TreeNode<DataType>* newPointer) {
-   _pointer = newPointer;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeNode<DataType>* TreeIterator<DataType>::getPointer() {
-   return _pointer;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-void TreeIterator<DataType>::clone(const TreeIterator<DataType>& rhs) {
-   _pointer = rhs._pointer;
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::children(int child) {
+   static Tree<DataType>::PostOrderIterator tmp;
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->_children[child]);
+   return tmp;
 }
 
 #endif

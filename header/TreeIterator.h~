@@ -1,9 +1,9 @@
-#ifndef _TREE_ITERATOR_H_
-#define _TREE_ITERATOR_H_
+#ifndef __TREE_ITERATOR_H__
+#define __TREE_ITERATOR_H__
 
 #include "TreeNode.h"
 
-template <class T>
+/*template <class T>
 class TreeNode;
 
 template <class DataType>
@@ -141,5 +141,5 @@ template <class DataType>
 void TreeIterator<DataType>::clone(const TreeIterator<DataType>& rhs) {
    _pointer = rhs._pointer;
 }
-
+*/
 #endif

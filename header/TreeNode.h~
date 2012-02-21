@@ -1,5 +1,5 @@
-#ifndef _TREE_NODE_H_
-#define _TREE_NODE_H_
+#ifndef __TREE_NODE_H__
+#define __TREE_NODE_H__
 
 #include <iostream>
 #include <vector>
@@ -154,7 +154,7 @@ TreeNode<DataType>& TreeNode<DataType>::operator=(const DataType& rightData) {
 
 template <class DataType>
 std::ostream& operator<<(std::ostream &out, const TreeNode<DataType>& node) {
-   out << "Data: " << node._data << std::endl;
+   /*out << "Data: " << node._data << std::endl;
    out << "Parent: " << node._parent << std::endl;
 
    int nChildren = node._children.size();
@@ -165,7 +165,9 @@ std::ostream& operator<<(std::ostream &out, const TreeNode<DataType>& node) {
       for(int i = 1; i < nChildren; ++i) {
          out << std::endl << "Children[" << i << "]: " << node._children[i];
       }
-   }
+   }*/
+
+   out << node._data;
 
    return out;
 }

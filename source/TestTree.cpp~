@@ -34,31 +34,48 @@ int main(int argc, char** argv) {
    tree.prePrint();
    tree.postPrint();*/
 
-   /*Tree<int> tree(2);
+   Tree<int> tree(28);
    Tree<int>::PreOrderIterator preIt;
-   Tree<int>::PostOrderIterator postIt;
+   Tree<int>::PreOrderIterator startEraseNode;
 
    preIt = tree.preBegin();
    tree.pushBackChild(preIt, 7);
    tree.pushBackChild(preIt, 5);
 
-   preIt.children(0, preIt);
+   preIt = preIt.children(0);
+   startEraseNode = preIt;
    tree.pushBackChild(preIt, 2);
    tree.pushBackChild(preIt, 6);
 
-   preIt.children(1, preIt);
+   preIt = preIt.children(1);
    tree.pushBackChild(preIt, 5);
    tree.pushBackChild(preIt, 11);
 
    preIt = tree.preBegin();
-   preIt.children(1, preIt);
+   preIt = preIt.children(1);
    tree.pushBackChild(preIt, 9);
 
-   preIt.children(0, preIt);
+   preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   tree.prePrint();
-   tree.postPrint();*/
+   // NO FUNCIONA PORQUE POSTBEGIN CONSTRUYE UN ITERADOR DE POST-ORDEN Y ENTONCES
+   // LO QUE SE DEVUELVE ES EL PRIMER NODO QUE HAY QUE IMPRIMIR
+   // HAY QUE HACER QUE SE DEVUELVA EL ITERADOR QUE APUNTA AL NODO ORIGINAL PARA
+   // QUE AL LLEVAR ACABAO LA ASIGNACION SE PASE AUTOMATICAMENTE AL PRIMER NODO
+   // A IMPRIMIR
 
+   Tree<int>::PostOrderIterator post;
+   //for(post = tree.postBegin(); post != tree.postEnd(); ++post) {
+      //post.printStack();
+      //cout << *post << " ";
+   //}
+   //cout << endl;
+
+   //tree.postPrint();
+
+   //tree.prePrint();
+   //tree.chop(startEraseNode);
+   //tree.prePrint();
+   
    return 0;
 }
