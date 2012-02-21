@@ -11,7 +11,7 @@ BIN = bin
 
 # Variables
 
-objects = $(OBJ)/Tree.o $(OBJ)/TreeNode.o $(OBJ)/TestTree.o
+objects = $(OBJ)/Tree.o $(OBJ)/TreeNode.o $(OBJ)/PreOrderIterator.o $(OBJ)/TreeIterator.o $(OBJ)/TestTree.o
 
 # Compilation options
 
@@ -23,11 +23,19 @@ all : $(BIN)/TestTree
 
 # Compilation instructions
 
+$(OBJ)/TreeIterator.o : $(SRC)/TreeIterator.cpp $(HEAD)/TreeIterator.h $(HEAD)/TreeNode.h
+	@echo "Building TreeIterator ..."
+	@$(CXX) $(FLAGS) $(SRC)/TreeIterator.cpp -o $(OBJ)/TreeIterator.o
+
+$(OBJ)/PreOrderIterator.o : $(SRC)/PreOrderIterator.cpp $(HEAD)/Tree.h
+	@echo "Building PreOrderIterator ..."
+	@$(CXX) $(FLAGS) $(SRC)/PreOrderIterator.cpp -o $(OBJ)/PreOrderIterator.o
+
 $(OBJ)/TreeNode.o : $(SRC)/TreeNode.cpp $(HEAD)/TreeNode.h
 	@echo "Building TreeNode ..."
 	@$(CXX) $(FLAGS) $(SRC)/TreeNode.cpp -o $(OBJ)/TreeNode.o
 
-$(OBJ)/Tree.o : $(SRC)/Tree.cpp $(HEAD)/Tree.h $(HEAD)/TreeNode.h
+$(OBJ)/Tree.o : $(SRC)/Tree.cpp $(HEAD)/Tree.h $(HEAD)/TreeNode.h $(HEAD)/TreeIterator.h
 	@echo "Building Tree ..."
 	@$(CXX) $(FLAGS) $(SRC)/Tree.cpp -o $(OBJ)/Tree.o
 
