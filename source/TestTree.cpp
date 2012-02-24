@@ -73,20 +73,8 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   // NO FUNCIONA PORQUE POSTBEGIN CONSTRUYE UN ITERADOR DE POST-ORDEN Y ENTONCES
-   // LO QUE SE DEVUELVE ES EL PRIMER NODO QUE HAY QUE IMPRIMIR
-   // HAY QUE HACER QUE SE DEVUELVA EL ITERADOR QUE APUNTA AL NODO ORIGINAL PARA
-   // QUE AL LLEVAR ACABAO LA ASIGNACION SE PASE AUTOMATICAMENTE AL PRIMER NODO
-   // A IMPRIMIR
-
-   Tree<int>::PostOrderIterator post;
-   //for(post = tree.postBegin(); post != tree.postEnd(); ++post) {
-      //post.printStack();
-      //cout << *post << " ";
-   //}
-   //cout << endl;
-
-   //tree.postPrint();
+   tree.prePrint();
+   tree.postPrint();
 
    //tree.prePrint();
    //tree.chop(startEraseNode);

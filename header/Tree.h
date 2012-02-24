@@ -73,8 +73,7 @@ class Tree {
 
       void prePrint() {
          if(_root != NULL) {
-            PreOrderIterator it;
-            for(it = preBegin(); it != preEnd(); ++it) {
+            for(PreOrderIterator it(preBegin()); it != preEnd(); ++it) {
                std::cout << *it << " ";
             }
             std::cout << std::endl;
@@ -83,8 +82,7 @@ class Tree {
 
       void postPrint() {
          if(_root != NULL) {
-            PostOrderIterator it;
-            for(it = postBegin(); it != postEnd(); ++it) {
+            for(PostOrderIterator it(postBegin()); it != postEnd(); ++it) {
                std::cout << *it << " ";
             }
             std::cout << std::endl;
@@ -246,7 +244,7 @@ void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
 
    if(parentPtr != NULL) {
       // Kill the given children (rootPtr)
-      
+
    }
 
    for(PostOrderIterator postIt(rootPtr); postIt != postEnd(); ++postIt) {
@@ -263,6 +261,7 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
    // If the tree already had data stored, delete it
    if(_root != NULL) {
       clean();
+      _root = NULL;
    }
 
    // This map is going to tell us which node is the parent of who
@@ -301,14 +300,9 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
 template <class DataType>
 void Tree<DataType>::clean() {
    // Use post-order iterator to erase each node
-   if(_root != NULL) {
-      for(PostOrderIterator postIt(postBegin()); postIt != postEnd(); ++postIt) {
-         std::cout << "Destructing " << *postIt << std::endl;
-         //delete postIt.getPointer();
-      }
-
-      _root = NULL;
-   }
+   if(_root != NULL)
+      for(PostOrderIterator postIt = postBegin(); postIt != postEnd(); ++postIt)
+         delete postIt.getPointer();
 }
 
 
@@ -515,7 +509,7 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
    private:
       friend PreOrderIterator Tree<DataType>::preBegin() const;
       friend PreOrderIterator Tree<DataType>::preEnd() const;
-      
+
       PreOrderIterator(TreeNode<DataType>* data);
 
       std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
@@ -692,10 +686,11 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
    private:
       friend PostOrderIterator Tree<DataType>::postBegin() const;
       friend PostOrderIterator Tree<DataType>::postEnd() const;
-      
+
       PostOrderIterator(TreeNode<DataType>* data);
 
       std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
+      bool _justCreated;
 };
 
 // *****************************************************************************
@@ -704,7 +699,7 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
 
 // Parent sets _pointer to NULL
 template <class DataType>
-Tree<DataType>::PostOrderIterator::PostOrderIterator() {
+Tree<DataType>::PostOrderIterator::PostOrderIterator() : _justCreated(false) {
    // Nothing to do
 }
 
@@ -712,20 +707,23 @@ Tree<DataType>::PostOrderIterator::PostOrderIterator() {
 
 template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator(TreeNode<DataType>* data) : TreeIterator<DataType>(data) {
-   std::cout << "Pringao" << std::endl;
-   _pathStack.push(std::pair<TreeNode<DataType>*, int>(TreeIterator<DataType>::getPointer(), 0));
+   TreeNode<DataType>* ptr = TreeIterator<DataType>::getPointer();
+   if(ptr != NULL) {
+      _pathStack.push(std::pair<TreeNode<DataType>*, int>(ptr, 0));
+      operator++();
+      _justCreated = true;
+   }
 }
 
 //______________________________________________________________________________
 
 template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator(const PostOrderIterator& source) : TreeIterator<DataType>(source) {
-   TreeNode<DataType>* sourcePtr(TreeIterator<DataType>::getPointer());
-   std::cout << "Hola" << std::endl;
-   if(sourcePtr != NULL) {
-      _pathStack.push(std::pair<TreeNode<DataType>*, int>(sourcePtr, 0));
+   TreeNode<DataType>* ptr = TreeIterator<DataType>::getPointer();
+   if(ptr != NULL) {
+      _pathStack.push(std::pair<TreeNode<DataType>*, int>(ptr, 0));
       operator++();
-      printStack();
+      _justCreated = true;
    }
 }
 
@@ -743,16 +741,24 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
    if(this != &rhs) {
       TreeIterator<DataType>::operator=(rhs);
 
-      // Clear the stack
-      while(!_pathStack.empty()) {
-         _pathStack.pop();
-      }
+      // If the right hand side element has already been used, we copy it normally
+      // if not. We just copy the stack state because the constructor has just been
+      // executed, which means that the state of the iterator has already been set
+      if(!rhs._justCreated) {
+         // Clear the stack
+         while(!_pathStack.empty()) {
+            _pathStack.pop();
+         }
 
-      // Put the first element to be printed at the top of the stack
-      TreeNode<DataType>* rhsPtr(TreeIterator<DataType>::getPointer());
-      if(rhsPtr != NULL) {
-         _pathStack.push(std::pair<TreeNode<DataType>*, int>(rhsPtr, 0));
-         operator++();
+         // Put the first element to be printed at the top of the stack
+         TreeNode<DataType>* rhsPtr(TreeIterator<DataType>::getPointer());
+         if(rhsPtr != NULL) {
+            _pathStack.push(std::pair<TreeNode<DataType>*, int>(rhsPtr, 0));
+            operator++();
+         }
+      }
+      else {
+         _pathStack = rhs._pathStack;
       }
    }
 
@@ -763,6 +769,8 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
 
 template <class DataType>
 typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::operator++() {
+   // Raise a flag indicating that this iterator is no longer on the initialization state
+   _justCreated = false;
    while(!_pathStack.empty()) {
       std::pair<TreeNode<DataType>*, int> topNode = _pathStack.top();
 
