@@ -14,9 +14,7 @@
  */
 
 #include <iostream>
-#include <vector>
 #include "Tree.h"
-#include "TreeNode.h"
 
 using namespace std;
 
@@ -79,6 +77,6 @@ int main(int argc, char** argv) {
    //tree.prePrint();
    //tree.chop(startEraseNode);
    //tree.prePrint();
-   
+
    return 0;
 }

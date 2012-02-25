@@ -17,7 +17,7 @@
 #define __TREE_NODE_H__
 
 #include <iostream>
-#include <vector>
+#include <list>
 
 
 // *****************************************************************************
@@ -52,7 +52,7 @@ class TreeNode {
       // Create a new node with a certain number of children
       TreeNode(const DataType& data, int nChildren);
       // Create a new node with the right data and children references and parent reference
-      TreeNode(const DataType& data, TreeNode<DataType>* parent, const std::vector< TreeNode<DataType>* >& children);
+      TreeNode(const DataType& data, TreeNode<DataType>* parent, const std::list< TreeNode<DataType>* >& children);
       // Careful!!! It copies the references
       TreeNode(const TreeNode<DataType>& source);
 
@@ -65,12 +65,12 @@ class TreeNode {
       friend std::ostream& operator<< <DataType>(std::ostream &out, const TreeNode<DataType>& node);
 
       inline TreeNode<DataType>* const parent() const;
-      inline TreeNode<DataType>* const children(int nChild) const;
+      inline TreeNode<DataType>* const children(unsigned int nChild);
       inline int nChildren();
    private:
       DataType _data;
       TreeNode<DataType>* _parent;
-      std::vector< TreeNode<DataType>* > _children;
+      std::list< TreeNode<DataType>* > _children;
 
       friend class Tree<DataType>;
       friend class TreeIterator<DataType>;
@@ -96,6 +96,8 @@ TreeNode<DataType>::TreeNode(const DataType& data) : _data(data), _parent(NULL) 
    // Nothing to do
 }
 
+//______________________________________________________________________________
+
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent) : _data(data), _parent(parent) {
    // Nothing to do
@@ -117,7 +119,7 @@ TreeNode<DataType>::TreeNode(const DataType& data, int nChildren) :
 // Create a new node with the right data and children references and parent reference
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent,
-                             const std::vector< TreeNode<DataType>* >& children) :
+                             const std::list< TreeNode<DataType>* >& children) :
 
    _data(data),
    _parent(parent),
@@ -196,9 +198,20 @@ TreeNode<DataType>* const TreeNode<DataType>::parent() const {
 
 //______________________________________________________________________________
 
+// DEPRECATED <- THROW EXCEPTION
 template <class DataType>
-TreeNode<DataType>* const TreeNode<DataType>::children(int nChild) const {
-   return _children[nChild];
+TreeNode<DataType>* const TreeNode<DataType>::children(unsigned int nChild) {
+   // If the index is out of bounds, throw an exception
+   if(nChild < 0 || nChild >= _children.size()) {
+      //throw exception
+   }
+
+   typename std::list<TreeNode<DataType>*>::iterator it(_children.begin());
+   for(unsigned int i = 0; it != _children.end(); ++it, ++i)
+      if(i == nChild)
+         return *it;
+
+   return NULL;
 }
 
 //______________________________________________________________________________
