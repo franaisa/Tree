@@ -74,8 +74,12 @@ int main(int argc, char** argv) {
    //tree.prePrint();
    //tree.postPrint();
 
-   tree.prePrint();
+   /*tree.prePrint();
    tree.chop(startEraseNode);
+   tree.prePrint();*/
+
+   tree.prePrint();
+   tree.erase(startEraseNode);
    tree.prePrint();
 
    return 0;

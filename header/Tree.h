@@ -62,13 +62,15 @@ class Tree {
       inline PostOrderIterator postBegin() const;
       inline PostOrderIterator postEnd() const;
 
-      inline unsigned int size() const;
-
       // Member functions to erase nodes
-      // erase un nodo
-      // tree poda(iterator) prune
+      void erase(TreeIterator<DataType>& node);
+      Tree<DataType> prune(TreeIterator<DataType>& rootNode);
       void chop(TreeIterator<DataType>& rootNode);
+
       // graft un tree
+      // graftFront(iterator)
+      // graftBack(iterator)
+      // graft(iterator, int position)
 
       void prePrint() {
          if(_root != NULL) {
@@ -92,7 +94,8 @@ class Tree {
       // Nothing yet
    private:
       TreeNode<DataType>* _root;
-      unsigned int _nNodes;
+
+      Tree(TreeNode<DataType>* root);
 
       void clone(const Tree<DataType>& source);
       inline void clean();
@@ -105,7 +108,7 @@ class Tree {
 
 
 template <class DataType>
-Tree<DataType>::Tree() : _root(NULL), _nNodes(0) {
+Tree<DataType>::Tree() : _root(NULL) {
    // Nothing to do
 }
 
@@ -113,7 +116,7 @@ Tree<DataType>::Tree() : _root(NULL), _nNodes(0) {
 
 // DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
-Tree<DataType>::Tree(const DataType& data) : _nNodes(1) {
+Tree<DataType>::Tree(const DataType& data) {
    _root = new(std::nothrow) TreeNode<DataType>(data);
 
    if(_root == NULL) {
@@ -125,7 +128,7 @@ Tree<DataType>::Tree(const DataType& data) : _nNodes(1) {
 
 // DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
-Tree<DataType>::Tree(const Tree<DataType>& source) : _root(NULL), _nNodes(source._nNodes) {
+Tree<DataType>::Tree(const Tree<DataType>& source) : _root(NULL) {
    clone(source);
 }
 
@@ -141,10 +144,8 @@ Tree<DataType>::~Tree() {
 // DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
 Tree<DataType>& Tree<DataType>::operator=(const Tree<DataType>& rhs) {
-   if(this != &rhs) {
-      _nNodes = rhs._nNodes;
+   if(this != &rhs)
       clone(rhs);
-   }
 
    return *this;
 }
@@ -160,8 +161,6 @@ void Tree<DataType>::setRoot(const DataType& data) {
       if(_root == NULL) {
          std::cerr << "Error: Failure to allocate memory for the root node" << std::endl;
       }
-
-      ++_nNodes;
    }
    else {
       *_root = data;
@@ -178,7 +177,6 @@ void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const 
       std::cerr << "Error: Failure to allocate memory" << std::endl;
    }
 
-   ++_nNodes;
    parent._pointer->_children.push_front(child);
    child->_childIt = parent._pointer->_children.begin();
 }
@@ -193,7 +191,6 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
       std::cerr << "Error: Failure to allocate memory" << std::endl;
    }
 
-   ++_nNodes;
    parent._pointer->_children.push_back(child);
    child->_childIt = --(parent._pointer->_children.end());
 }
@@ -228,9 +225,44 @@ typename Tree<DataType>::PostOrderIterator Tree<DataType>::postEnd() const {
 
 //______________________________________________________________________________
 
+// DEPRECATED <- IF NODE IS NULL OR IS THE ROOT NODE, THROW EXCEPTION
 template <class DataType>
-unsigned int Tree<DataType>::size() const {
-   return _nNodes;
+void Tree<DataType>::erase(TreeIterator<DataType>& node) {
+   TreeNode<DataType>* nodePtr(node.getPointer());
+   // By definition a tree has a single root, hence, the root node can't be
+   // erased
+   if(nodePtr == _root) {
+      //THROW EXCEPTION
+      throw;
+   }
+
+   // Insert every child under the position that the iterator of the current
+   // node indicates (in the parent node)
+   typename std::list< TreeNode<DataType>* >::iterator it(nodePtr->_children.begin());
+   for(; it != nodePtr->_children.end(); ++it) {
+      nodePtr->_parent->_children.insert(nodePtr->_childIt, *it);
+      // Update _childIt for each relinked child
+      (*it)->_childIt = nodePtr->_childIt;
+      --((*it)->_childIt);
+   }
+
+   // Erase the node
+   nodePtr->_parent->_children.erase(nodePtr->_childIt);
+   delete nodePtr;
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTION IF NULL NODE
+template <class DataType>
+Tree<DataType> Tree<DataType>::prune(TreeIterator<DataType>& rootNode) {
+   TreeNode<DataType>* nodePtr = rootNode.getPointer();
+
+   // Erase the child reference to this node on the parent node if there is a
+   // parent node
+   nodePtr->_parent->_children.erase(nodePtr->_childIt);
+
+   return Tree<DataType>(nodePtr);
 }
 
 //______________________________________________________________________________
@@ -241,18 +273,21 @@ void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
    TreeNode<DataType>* rootPtr(rootNode.getPointer());
    TreeNode<DataType>* parentPtr(rootPtr->parent());
 
-   // Destroy every thing under the starting node (or root node) except for the
-   // starting node itself which will be deleted from the parent
-   for(PostOrderIterator postIt(rootPtr); postIt != rootNode; ++postIt)
-      delete postIt.getPointer();
-
-   // If the node being erased has a parent, erase the node from the children
-   // list
-   if(parentPtr != NULL) 
+   // Erase the child reference to this node on the parent node if there is a
+   // parent node
+   if(parentPtr != NULL)
       parentPtr->_children.erase(rootPtr->_childIt);
-   // Otherwise, just erase the root node as usual
-   else
-      delete rootPtr;
+
+   // Deallocate memory for every node under 'rootNode'
+   for(PostOrderIterator postIt(rootPtr); postIt != postEnd(); ++postIt)
+      delete postIt.getPointer();
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+Tree<DataType>::Tree(TreeNode<DataType>* root) {
+   this->_root = root;
 }
 
 //______________________________________________________________________________
