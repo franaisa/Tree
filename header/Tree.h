@@ -67,7 +67,6 @@ class Tree {
       // Member functions to erase nodes
       // erase un nodo
       // tree poda(iterator) prune
-      // void corte(iterator) chop
       void chop(TreeIterator<DataType>& rootNode);
       // graft un tree
 
@@ -181,6 +180,7 @@ void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const 
 
    ++_nNodes;
    parent._pointer->_children.push_front(child);
+   child->_childIt = parent._pointer->_children.begin();
 }
 
 //______________________________________________________________________________
@@ -195,6 +195,7 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
 
    ++_nNodes;
    parent._pointer->_children.push_back(child);
+   child->_childIt = --(parent._pointer->_children.end());
 }
 
 //______________________________________________________________________________
@@ -234,22 +235,24 @@ unsigned int Tree<DataType>::size() const {
 
 //______________________________________________________________________________
 
-// DEPRECATED IF THE ITERATOR PASSED IS A NULL POINTER NOTHING HAPPENS
+// DEPRECATED IF THE ITERATOR PASSED IS A NULL POINTER THROW EXCEPTION
 template <class DataType>
 void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
    TreeNode<DataType>* rootPtr(rootNode.getPointer());
    TreeNode<DataType>* parentPtr(rootPtr->parent());
 
-   if(parentPtr != NULL) {
-      // Kill the given children (rootPtr)
+   // Destroy every thing under the starting node (or root node) except for the
+   // starting node itself which will be deleted from the parent
+   for(PostOrderIterator postIt(rootPtr); postIt != rootNode; ++postIt)
+      delete postIt.getPointer();
 
-   }
-
-   for(PostOrderIterator postIt(rootPtr); postIt != postEnd(); ++postIt) {
-      std::cout << *postIt << " ";
-      //delete postIt.getPointer();
-   }
-   std::cout << std::endl;
+   // If the node being erased has a parent, erase the node from the children
+   // list
+   if(parentPtr != NULL) 
+      parentPtr->_children.erase(rootPtr->_childIt);
+   // Otherwise, just erase the root node as usual
+   else
+      delete rootPtr;
 }
 
 //______________________________________________________________________________
@@ -286,9 +289,21 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
       // Copy node data
       *myIt = *srcIt;
 
+      // DEPRECATED <- do not reference children by INDEX
+      
       // Allocate memory for descendants if any and put them in the dictionary
       for(int i = 0; i < nChildren; ++i) {
-         myPt->_children.push_back(new(std::nothrow) TreeNode<DataType>);
+         TreeNode<DataType>* newChild = new(std::nothrow) TreeNode<DataType>;
+         if(newChild == NULL) {
+            // THROW EXCEPTION
+         }
+
+         // Allocate memory for a new child
+         myPt->_children.push_back(newChild);
+         // Store the parent iterator that points to this child, in the child
+         // so we can erase nodes easily
+         newChild->_childIt = --(myPt->_children.end());
+         // Make a correspondence in the dictionary
          parentMap[srcPt->children(i)] = myPt->children(i);
       }
    }

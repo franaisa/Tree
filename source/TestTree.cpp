@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
    tree.pushBackChild(preIt, 5);
 
    preIt = preIt.children(0);
-   startEraseNode = preIt;
+   startEraseNode = preIt; // Node 7
    tree.pushBackChild(preIt, 2);
    tree.pushBackChild(preIt, 6);
 
@@ -71,12 +71,12 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   tree.prePrint();
-   tree.postPrint();
+   //tree.prePrint();
+   //tree.postPrint();
 
-   //tree.prePrint();
-   //tree.chop(startEraseNode);
-   //tree.prePrint();
+   tree.prePrint();
+   tree.chop(startEraseNode);
+   tree.prePrint();
 
    return 0;
 }

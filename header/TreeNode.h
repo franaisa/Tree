@@ -70,6 +70,7 @@ class TreeNode {
    private:
       DataType _data;
       TreeNode<DataType>* _parent;
+      typename std::list< TreeNode<DataType>* >::iterator _childIt; 
       std::list< TreeNode<DataType>* > _children;
 
       friend class Tree<DataType>;
@@ -98,6 +99,7 @@ TreeNode<DataType>::TreeNode(const DataType& data) : _data(data), _parent(NULL) 
 
 //______________________________________________________________________________
 
+// DEPRECATED posicion en la que estas
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent) : _data(data), _parent(parent) {
    // Nothing to do
@@ -116,6 +118,7 @@ TreeNode<DataType>::TreeNode(const DataType& data, int nChildren) :
 
 //______________________________________________________________________________
 
+// DEPRECATED iterator del padre children
 // Create a new node with the right data and children references and parent reference
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent,
@@ -130,6 +133,7 @@ TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent,
 
 //______________________________________________________________________________
 
+// DEPRECATED, COPIAR EL ITERADOR
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
 template <class DataType>
 TreeNode<DataType>::TreeNode(const TreeNode<DataType>& source) :
@@ -223,6 +227,7 @@ int TreeNode<DataType>::nChildren() {
 
 //______________________________________________________________________________
 
+// DEPRECATED, COPIAR ITERATOR
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
 template <class DataType>
 void TreeNode<DataType>::clone(const TreeNode<DataType>& source) {
