@@ -19,33 +19,35 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-   /*Tree<int>::PreOrderIterator it;
-   Tree<int> tree(10);
+   Tree<int>::PreOrderIterator it;
+   Tree<int>::PreOrderIterator graftIt;
+   Tree<int> tree2(10);
 
-   it = tree.preBegin();
-   tree.pushBackChild(it, 20);
-   tree.pushBackChild(it, 30);
-   tree.pushBackChild(it, 40);
-   tree.pushBackChild(it, 50);
+   it = tree2.preBegin();
+   tree2.pushBackChild(it, 20);
+   tree2.pushBackChild(it, 30);
+   tree2.pushBackChild(it, 40);
+   tree2.pushBackChild(it, 50);
 
-   it.children(1, it);
-   tree.pushBackChild(it, 60);
-   tree.pushBackChild(it, 70);
+   it = it.children(1);
+   tree2.pushBackChild(it, 60);
+   tree2.pushBackChild(it, 70);
 
-   it.children(1, it);
-   tree.pushBackChild(it, 80);
-   tree.pushBackChild(it, 90);
-   tree.pushBackChild(it, 100);
+   it = it.children(1);
+   tree2.pushBackChild(it, 80);
+   tree2.pushBackChild(it, 90);
+   tree2.pushBackChild(it, 100);
 
-   it.children(2, it);
-   tree.pushBackChild(it, 110);
+   it = it.children(2);
+   tree2.pushBackChild(it, 110);
 
-   it = tree.preBegin();
-   it.children(3, it);
-   tree.pushBackChild(it, 120);
+   it = tree2.preBegin();
+   it = it.children(3);
+   graftIt = it;
+   tree2.pushBackChild(it, 120);
 
-   tree.prePrint();
-   tree.postPrint();*/
+   tree2.prePrint();
+   //tree2.postPrint();
 
    Tree<int> tree(28);
    Tree<int>::PreOrderIterator preIt;
@@ -71,16 +73,23 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   //tree.prePrint();
+   tree.prePrint();
    //tree.postPrint();
 
    /*tree.prePrint();
    tree.chop(startEraseNode);
    tree.prePrint();*/
 
-   tree.prePrint();
+   /*tree.prePrint();
    tree.erase(startEraseNode);
-   tree.prePrint();
+   tree.prePrint();*/
+
+   /*tree.prePrint();
+   tree.insertChild(startEraseNode, 1, 200);
+   tree.prePrint();*/
+
+   tree2.graftBack(graftIt, tree);
+   tree2.prePrint();
 
    return 0;
 }

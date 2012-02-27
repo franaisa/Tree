@@ -54,7 +54,7 @@ class Tree {
       // Return iterator to child inserted
       void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data);
       void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data);
-      //void insertChild(const TreeIterator<DataType>& parent, const DataType& data);
+      void insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data);
 
       // Member functions to obtain iterators
       inline PreOrderIterator preBegin() const;
@@ -67,10 +67,9 @@ class Tree {
       Tree<DataType> prune(TreeIterator<DataType>& rootNode);
       void chop(TreeIterator<DataType>& rootNode);
 
-      // graft un tree
-      // graftFront(iterator)
-      // graftBack(iterator)
-      // graft(iterator, int position)
+      void graftFront(const TreeIterator<DataType>& parent, const Tree<DataType> tree);
+      void graftBack(const TreeIterator<DataType>& parent, const Tree<DataType> tree);
+      void graftAt(const TreeIterator<DataType>& parent, unsigned int position, const Tree<DataType> tree);
 
       void prePrint() {
          if(_root != NULL) {
@@ -95,7 +94,7 @@ class Tree {
    private:
       TreeNode<DataType>* _root;
 
-      Tree(TreeNode<DataType>* root);
+      inline Tree(TreeNode<DataType>* root);
 
       void clone(const Tree<DataType>& source);
       inline void clean();
@@ -189,10 +188,36 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
    TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
    if(child == NULL) {
       std::cerr << "Error: Failure to allocate memory" << std::endl;
+      throw;
    }
 
    parent._pointer->_children.push_back(child);
    child->_childIt = --(parent._pointer->_children.end());
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED or index is out of bounds
+template <class DataType>
+void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data) {
+   TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
+   if(child == NULL) {
+      std::cerr << "Error: Failure to allocate memory" << std::endl;
+      throw;
+   }
+
+   if(position < 0 || position >= parent._pointer->_children.size()) {
+      std::cerr << "Error: Index out of bounds" << std::endl;
+      throw;
+   }
+
+   typename std::list< TreeNode<DataType>* >::iterator it(parent._pointer->_children.begin());
+   for(unsigned int i = 0; i < position; ++i, ++it) {
+      // Nothing to do
+   }
+
+   parent._pointer->_children.insert(it, child);
+   child->_childIt = --it;
 }
 
 //______________________________________________________________________________
@@ -281,6 +306,76 @@ void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
    // Deallocate memory for every node under 'rootNode'
    for(PostOrderIterator postIt(rootPtr); postIt != postEnd(); ++postIt)
       delete postIt.getPointer();
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
+// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
+// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
+template <class DataType>
+void Tree<DataType>::graftFront(const TreeIterator<DataType>& parent, const Tree<DataType> tree) {
+   // The current tree adopts the new tree created and assumes the responsability
+   // of liberating the corresponding resources
+   Tree<DataType>* adoptTree(new(std::nothrow) Tree<DataType>(tree));
+
+   if(adoptTree == NULL) {
+      std::cerr << "Error: Failure to allocate memory" << std::endl;
+      throw;
+   }
+
+   parent._pointer->_children.push_front(adoptTree->_root);
+   adoptTree->_root->_childIt = parent._pointer->_children.begin();
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
+// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
+// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
+template <class DataType>
+void Tree<DataType>::graftBack(const TreeIterator<DataType>& parent, const Tree<DataType> tree) {
+   // The current tree adopts the new tree created and assumes the responsability
+   // of liberating the corresponding resources
+   Tree<DataType>* adoptTree(new(std::nothrow) Tree<DataType>(tree));
+
+   if(adoptTree == NULL) {
+      std::cerr << "Error: Failure to allocate memory" << std::endl;
+      throw;
+   }
+
+   parent._pointer->_children.push_back(adoptTree->_root);
+   adoptTree->_root->_childIt = --(parent._pointer->_children.end());
+}
+
+//______________________________________________________________________________
+
+// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
+// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
+// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
+template <class DataType>
+void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, unsigned int position, const Tree<DataType> tree) {
+   // The current tree adopts the new tree created and assumes the responsability
+   // of liberating the corresponding resources
+   Tree<DataType>* adoptTree(new(std::nothrow) Tree<DataType>(tree));
+
+   if(adoptTree == NULL) {
+      std::cerr << "Error: Failure to allocate memory" << std::endl;
+      throw;
+   }
+
+   if(position < 0 || position >= parent._pointer->_children.size()) {
+      std::cerr << "Error: Index out of bounds" << std::endl;
+      throw;
+   }
+
+   typename std::list< TreeNode<DataType>* >::iterator it(parent._pointer->_children.begin());
+   for(unsigned int i = 0; i < position; ++i, ++it) {
+      // Nothing to do
+   }
+
+   parent._pointer->_children.insert(it, adoptTree->_root);
+   adoptTree->_root->_childIt = --it;
 }
 
 //______________________________________________________________________________
