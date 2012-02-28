@@ -17,7 +17,6 @@
 #define __TREE_H__
 
 #include "TreeNode.h"
-#include "TreeIterator.h"
 #include <iterator>
 #include <map>
 #include <new>
@@ -41,22 +40,27 @@ class Tree {
       class PostOrderIterator;
 
       Tree();
-      Tree(const DataType& data);
-      Tree(const Tree<DataType>& source);
+      Tree(const DataType& data) throw (std::bad_alloc);
+      Tree(const Tree<DataType>& source) throw(std::bad_alloc);
 
       virtual ~Tree();
 
-      Tree<DataType>& operator=(const Tree<DataType>& rhs);
+      Tree<DataType>& operator=(const Tree<DataType>& rhs) throw(std::bad_alloc);
 
-      // Return iterator to root
-      void setRoot(const DataType& data);
+      // If the root node doesn't exists, it creates a new one, otherwise it just
+      // changes the value of the root node
+      void setRoot(const DataType& data) throw(std::bad_alloc);
 
       // Return iterator to child inserted
-      void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data);
-      void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data);
-      void insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data);
+      void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
+      void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
+      void insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data) throw(std::bad_alloc, std::out_of_range);
 
       // Member functions to obtain iterators
+      // Note that they could have been implemented returning just one kind of
+      // iterator and then using a conversion constructor if the iterator to match
+      // is different. That approach would mean the creation of one more temporary
+      // variable, that's why we haven't used it.
       inline PreOrderIterator preBegin() const;
       inline PreOrderIterator preEnd() const;
       inline PostOrderIterator postBegin() const;
@@ -96,7 +100,7 @@ class Tree {
 
       inline Tree(TreeNode<DataType>* root);
 
-      void clone(const Tree<DataType>& source);
+      void clone(const Tree<DataType>& source) throw(std::bad_alloc);
       inline void clean();
 };
 
@@ -113,13 +117,17 @@ Tree<DataType>::Tree() : _root(NULL) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
-Tree<DataType>::Tree(const DataType& data) {
-   _root = new(std::nothrow) TreeNode<DataType>(data);
+Tree<DataType>::Tree(const DataType& data) throw (std::bad_alloc) {
+   try {
+      _root = new TreeNode<DataType>(data);
+   }
+   catch(std::bad_alloc& ex) {
+      std::cerr << ex.what() << " : Failure to allocate memory for the root node when building the tree" << std::endl;
 
-   if(_root == NULL) {
-      std::cerr << "Error: Failure to allocate memory" << std::endl;
+      // No resources need to be deallocated here
+      // Because we are dealing with a run-time exception, rethrow it
+      throw;
    }
 }
 
@@ -127,12 +135,13 @@ Tree<DataType>::Tree(const DataType& data) {
 
 // DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
-Tree<DataType>::Tree(const Tree<DataType>& source) : _root(NULL) {
+Tree<DataType>::Tree(const Tree<DataType>& source) throw(std::bad_alloc) : _root(NULL) {
    clone(source);
 }
 
 //______________________________________________________________________________
 
+// DEPRECATED <- To be implemented with chop
 template <class DataType>
 Tree<DataType>::~Tree() {
    clean();
@@ -142,7 +151,7 @@ Tree<DataType>::~Tree() {
 
 // DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
-Tree<DataType>& Tree<DataType>::operator=(const Tree<DataType>& rhs) {
+Tree<DataType>& Tree<DataType>::operator=(const Tree<DataType>& rhs) throw(std::bad_alloc) {
    if(this != &rhs)
       clone(rhs);
 
@@ -151,29 +160,40 @@ Tree<DataType>& Tree<DataType>::operator=(const Tree<DataType>& rhs) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
-void Tree<DataType>::setRoot(const DataType& data) {
+void Tree<DataType>::setRoot(const DataType& data) throw(std::bad_alloc) {
    if(_root == NULL) {
-      _root = new(std::nothrow) TreeNode<DataType>(data);
+      try {
+         _root = new TreeNode<DataType>(data);
+      }
+      catch(std::bad_alloc& ex) {
+         std::cerr << ex.what() << " : Failure to allocate memory for the root node" << std::endl;
 
-      if(_root == NULL) {
-         std::cerr << "Error: Failure to allocate memory for the root node" << std::endl;
+         // No resources need to be deallocated here, because the tree was empty
+         // Because we are dealing with a run-time exception, rethrow it
+         throw;
       }
    }
    else {
+      // Just assign a new value to the root
       *_root = data;
    }
 }
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
-void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) {
-   TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
-   if(child == NULL) {
-      std::cerr << "Error: Failure to allocate memory" << std::endl;
+void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc) {
+   TreeNode<DataType>* child;
+   try {
+      child = new TreeNode<DataType>(data, parent._pointer);
+   }
+   catch(std::bad_alloc& ex) {
+      std::cerr << ex.what() << " : Failure to allocate memory for the new child" << std::endl;
+
+      // Since we are not inside the constructor, the destructor for this object
+      // will get called, hence, there won't be any memory leak
+      throw;
    }
 
    parent._pointer->_children.push_front(child);
@@ -182,12 +202,17 @@ void Tree<DataType>::pushFrontChild(const TreeIterator<DataType>& parent, const 
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
 template <class DataType>
-void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) {
-   TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
-   if(child == NULL) {
-      std::cerr << "Error: Failure to allocate memory" << std::endl;
+void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc) {
+   TreeNode<DataType>* child;
+   try {
+      child = new TreeNode<DataType>(data, parent._pointer);
+   }
+   catch(std::bad_alloc& ex) {
+      std::cerr << ex.what() << " : Failure to allocate memory for the new child" << std::endl;
+
+      // Since we are not inside the constructor, the destructor for this object
+      // will get called, hence, there won't be any memory leak
       throw;
    }
 
@@ -197,18 +222,25 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED or index is out of bounds
 template <class DataType>
-void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data) {
-   TreeNode<DataType>* child = new(std::nothrow) TreeNode<DataType>(data, parent._pointer);
-   if(child == NULL) {
-      std::cerr << "Error: Failure to allocate memory" << std::endl;
+void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data)
+   throw(std::bad_alloc, std::out_of_range)
+{
+
+   TreeNode<DataType>* child;
+   try {
+      child = new TreeNode<DataType>(data, parent._pointer);
+   }
+   catch(std::bad_alloc& ex) {
+      std::cerr << ex.what() << " : Failure to allocate memory for the new child" << std::endl;
+
+      // Since we are not inside the constructor, the destructor for this object
+      // will get called, hence, there won't be any memory leak
       throw;
    }
 
    if(position < 0 || position >= parent._pointer->_children.size()) {
-      std::cerr << "Error: Index out of bounds" << std::endl;
-      throw;
+      throw std::out_of_range("Trying to insert a child in a position that is out of bounds");
    }
 
    typename std::list< TreeNode<DataType>* >::iterator it(parent._pointer->_children.begin());
@@ -387,10 +419,9 @@ Tree<DataType>::Tree(TreeNode<DataType>* root) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION IF MEMORY CAN'T BE ALLOCATED
-// To be implemented as a copy-on-write
+// DEPRECATED <- To be implemented as a copy-on-write
 template <class DataType>
-void Tree<DataType>::clone(const Tree<DataType>& source) {
+void Tree<DataType>::clone(const Tree<DataType>& source) throw(std::bad_alloc) {
    // If the tree already had data stored, delete it
    if(_root != NULL) {
       clean();
@@ -402,14 +433,19 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
    parentMap[NULL] = NULL;
 
    // Allocate memory for the new root
-   _root = new(std::nothrow) TreeNode<DataType>(*source.preBegin());
+   try {
+      _root = new TreeNode<DataType>(*source.preBegin());
+   }
+   catch(std::bad_alloc& ex) {
+      std::cerr << ex.what() << " : Failure to allocate memory for the root node when executing clone()" << std::endl;
+      throw;
+   }
    parentMap[source._root] = _root;
 
    for(PreOrderIterator srcIt = source.preBegin(), myIt = preBegin(); srcIt != source.preEnd(); ++srcIt, ++myIt) {
       // Temp variables
       TreeNode<DataType>* myPt = myIt.getPointer();
       TreeNode<DataType>* srcPt = srcIt.getPointer();
-      int nChildren = srcPt->nChildren();
       PreOrderIterator tmpParent;
       tmpParent = srcIt.parent();
 
@@ -419,13 +455,16 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
       // Copy node data
       *myIt = *srcIt;
 
-      // DEPRECATED <- do not reference children by INDEX
-      
       // Allocate memory for descendants if any and put them in the dictionary
-      for(int i = 0; i < nChildren; ++i) {
-         TreeNode<DataType>* newChild = new(std::nothrow) TreeNode<DataType>;
-         if(newChild == NULL) {
-            // THROW EXCEPTION
+      typename std::list< TreeNode<DataType>* >::iterator it;
+      for(it = srcPt->_children.begin(); it != srcPt->_children.end(); ++it) {
+         TreeNode<DataType>* newChild;
+         try {
+            newChild = new TreeNode<DataType>;
+         }
+         catch(std::bad_alloc& ex) {
+            std::cerr << ex.what() << " : Failure to allocate memory when creating children in clone()" << std::endl;
+            throw;
          }
 
          // Allocate memory for a new child
@@ -434,7 +473,7 @@ void Tree<DataType>::clone(const Tree<DataType>& source) {
          // so we can erase nodes easily
          newChild->_childIt = --(myPt->_children.end());
          // Make a correspondence in the dictionary
-         parentMap[srcPt->children(i)] = myPt->children(i);
+         parentMap[*it] = newChild;
       }
    }
 }
@@ -480,7 +519,10 @@ class TreeIterator {
 
       // Abstract
       virtual TreeIterator<DataType>& operator++() = 0;
-      TreeIterator<DataType> operator++(int notUsed);
+      // Because TreeIterator is abstract we can't implement operator++(int) like this
+      // because a reference to TreeIterator<T> can't be returned, hence, we need
+      // to implement it, in each derived class independently
+      //virtual TreeIterator<DataType> operator++(int notUsed) = 0;
 
       inline bool operator==(const TreeIterator<DataType>& rhs) const;
       inline bool operator!=(const TreeIterator<DataType>& rhs) const;
@@ -496,7 +538,7 @@ class TreeIterator {
       // THIS TWO METHODS MUST NEVER BE USED TO MODIFY THE RETURNED VALUE
       // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
       virtual TreeIterator<DataType>& parent() = 0;
-      virtual TreeIterator<DataType>& children(int child) = 0;
+      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range) = 0;
    //protected:
       TreeIterator(TreeNode<DataType>* data);
    private:
@@ -558,15 +600,6 @@ TreeIterator<DataType>& TreeIterator<DataType>::operator=(TreeNode<DataType>* rh
    }
 
    return *this;;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType> TreeIterator<DataType>::operator++(int notUsed) {
-   TreeIterator<DataType> tmp(*this);
-   operator++();
-   return tmp;
 }
 
 //______________________________________________________________________________
@@ -647,9 +680,10 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
       PreOrderIterator& operator=(const TreeIterator<DataType>& rhs);
 
       virtual PreOrderIterator& operator++();
+      PreOrderIterator operator++(int notUsed);
 
       virtual TreeIterator<DataType>& parent();
-      virtual TreeIterator<DataType>& children(int child);
+      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
    //private:
       friend PreOrderIterator Tree<DataType>::preBegin() const;
       friend PreOrderIterator Tree<DataType>::preEnd() const;
@@ -766,6 +800,15 @@ typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::ope
 //______________________________________________________________________________
 
 template <class DataType>
+typename Tree<DataType>::PreOrderIterator Tree<DataType>::PreOrderIterator::operator++(int notUsed) {
+   PreOrderIterator tmp(*this);
+   ++(*this);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
 TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::parent() {
    static Tree<DataType>::PreOrderIterator tmp;
    tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
@@ -774,11 +817,10 @@ TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::parent() {
 
 //______________________________________________________________________________
 
-// DEPRECATED Child can't be out of bounds
 template <class DataType>
-TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::children(int child) {
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::children(int child) throw(std::out_of_range) {
    static Tree<DataType>::PreOrderIterator tmp;
-   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child));
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child)); // throws std::out_of_range
    return tmp;
 }
 
@@ -813,6 +855,7 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
       PostOrderIterator& operator=(const PostOrderIterator& rhs);
 
       virtual PostOrderIterator& operator++();
+      PostOrderIterator operator++(int notUsed);
 
       void printStack() {
          std::stack< std::pair<TreeNode<DataType>*, int> > auxStack(_pathStack);
@@ -826,7 +869,7 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
       }
 
       virtual TreeIterator<DataType>& parent();
-      virtual TreeIterator<DataType>& children(int child);
+      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
    //private:
       friend PostOrderIterator Tree<DataType>::postBegin() const;
       friend PostOrderIterator Tree<DataType>::postEnd() const;
@@ -938,6 +981,15 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
 //______________________________________________________________________________
 
 template <class DataType>
+typename Tree<DataType>::PostOrderIterator Tree<DataType>::PostOrderIterator::operator++(int notUsed) {
+   PostOrderIterator tmp(*this);
+   ++(*this);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
 TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::parent() {
    static Tree<DataType>::PostOrderIterator tmp;
    tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
@@ -946,11 +998,10 @@ TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::parent() {
 
 //______________________________________________________________________________
 
-// DEPRECATED Child can't be out of bounds
 template <class DataType>
-TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::children(int child) {
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::children(int child) throw (std::out_of_range) {
    static Tree<DataType>::PostOrderIterator tmp;
-   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child));
+   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child)); // std::out_of_range
    return tmp;
 }
 

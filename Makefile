@@ -31,7 +31,7 @@ $(OBJ)/Tree.o : $(SRC)/Tree.cpp $(HEAD)/Tree.h $(HEAD)/TreeNode.h
 	@echo "Building Tree ..."
 	@$(CXX) $(FLAGS) $(SRC)/Tree.cpp -o $(OBJ)/Tree.o
 
-$(OBJ)/TestTree.o : $(SRC)/TestTree.cpp $(HEAD)/Tree.h $(HEAD)/TreeNode.h
+$(OBJ)/TestTree.o : $(SRC)/TestTree.cpp $(HEAD)/Tree.h
 	@echo "Building TestTree ..."
 	@$(CXX) $(FLAGS) $(SRC)/TestTree.cpp -o $(OBJ)/TestTree.o
 
@@ -46,4 +46,4 @@ $(BIN)/TestTree : $(objects)
 .PHONY : clean
 clean:
 	@echo "Cleaning up ..."
-	@-rm -f $(OBJ)/* $(BIN)/* $(HEAD)/*~ $(SRC)/*~ Makefile~
+	@-rm -f $(OBJ)/* $(BIN)/* $(HEAD)/*~ $(SRC)/*~ *~

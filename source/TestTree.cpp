@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
    graftIt = it;
    tree2.pushBackChild(it, 120);
 
-   tree2.prePrint();
+   //tree2.prePrint();
    //tree2.postPrint();
 
    Tree<int> tree(28);
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   tree.prePrint();
+   //tree.prePrint();
    //tree.postPrint();
 
    /*tree.prePrint();
@@ -88,8 +88,8 @@ int main(int argc, char** argv) {
    tree.insertChild(startEraseNode, 1, 200);
    tree.prePrint();*/
 
-   tree2.graftBack(graftIt, tree);
-   tree2.prePrint();
+   //tree2.graftBack(graftIt, tree);
+   //tree2.prePrint();
 
    return 0;
 }

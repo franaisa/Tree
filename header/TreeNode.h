@@ -17,6 +17,9 @@
 #define __TREE_NODE_H__
 
 #include <iostream>
+#include <stdexcept>
+#include <stdlib.h>
+#include <cstring>
 #include <list>
 
 
@@ -49,10 +52,6 @@ class TreeNode {
       TreeNode();
       TreeNode(const DataType& data);
       TreeNode(const DataType& data, TreeNode<DataType>* parent);
-      // Create a new node with a certain number of children
-      TreeNode(const DataType& data, int nChildren);
-      // Create a new node with the right data and children references and parent reference
-      TreeNode(const DataType& data, TreeNode<DataType>* parent, const std::list< TreeNode<DataType>* >& children);
       // Careful!!! It copies the references
       TreeNode(const TreeNode<DataType>& source);
 
@@ -62,10 +61,10 @@ class TreeNode {
       TreeNode<DataType>& operator=(const TreeNode<DataType>& rhs);
       TreeNode<DataType>& operator=(const DataType& rightData);
 
-      friend std::ostream& operator<< <DataType>(std::ostream &out, const TreeNode<DataType>& node);
+      friend std::ostream& operator<< <DataType>(std::ostream& out, const TreeNode<DataType>& node);
 
       inline TreeNode<DataType>* const parent() const;
-      inline TreeNode<DataType>* const children(unsigned int nChild);
+      inline TreeNode<DataType>* const children(unsigned int nChild) throw(std::out_of_range);
       inline int nChildren();
    private:
       DataType _data;
@@ -92,6 +91,7 @@ TreeNode<DataType>::TreeNode() : _parent(NULL) {
 
 //______________________________________________________________________________
 
+// Once created, the iterator has to be modified manually
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data) : _data(data), _parent(NULL) {
    // Nothing to do
@@ -99,7 +99,7 @@ TreeNode<DataType>::TreeNode(const DataType& data) : _data(data), _parent(NULL) 
 
 //______________________________________________________________________________
 
-// DEPRECATED posicion en la que estas
+// Once created, the iterator has to be modified manually
 template <class DataType>
 TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent) : _data(data), _parent(parent) {
    // Nothing to do
@@ -107,38 +107,12 @@ TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent) :
 
 //______________________________________________________________________________
 
-template <class DataType>
-TreeNode<DataType>::TreeNode(const DataType& data, int nChildren) :
-   _data(data),
-   _parent(NULL),
-   _children(nChildren)
-{
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-// DEPRECATED iterator del padre children
-// Create a new node with the right data and children references and parent reference
-template <class DataType>
-TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent,
-                             const std::list< TreeNode<DataType>* >& children) :
-
-   _data(data),
-   _parent(parent),
-   _children(children)
-{
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
-// DEPRECATED, COPIAR EL ITERADOR
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
 template <class DataType>
 TreeNode<DataType>::TreeNode(const TreeNode<DataType>& source) :
    _data(source._data),
    _parent(source._parent),
+   _childIt(source._childIt),
    _children(source._children)
 {
    // Nothing to do
@@ -174,20 +148,7 @@ TreeNode<DataType>& TreeNode<DataType>::operator=(const DataType& rightData) {
 //______________________________________________________________________________
 
 template <class DataType>
-std::ostream& operator<<(std::ostream &out, const TreeNode<DataType>& node) {
-   /*out << "Data: " << node._data << std::endl;
-   out << "Parent: " << node._parent << std::endl;
-
-   int nChildren = node._children.size();
-   if (nChildren == 0)
-      out << "No children" << std::endl;
-   else {
-      out << "Children[0]: " << node._children[0];
-      for(int i = 1; i < nChildren; ++i) {
-         out << std::endl << "Children[" << i << "]: " << node._children[i];
-      }
-   }*/
-
+std::ostream& operator<<(std::ostream& out, const TreeNode<DataType>& node) {
    out << node._data;
 
    return out;
@@ -202,12 +163,11 @@ TreeNode<DataType>* const TreeNode<DataType>::parent() const {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTION
 template <class DataType>
-TreeNode<DataType>* const TreeNode<DataType>::children(unsigned int nChild) {
+TreeNode<DataType>* const TreeNode<DataType>::children(unsigned int nChild) throw(std::out_of_range) {
    // If the index is out of bounds, throw an exception
    if(nChild < 0 || nChild >= _children.size()) {
-      //throw exception
+      throw std::out_of_range("Given index is out of bounds for children of the current node");
    }
 
    typename std::list<TreeNode<DataType>*>::iterator it(_children.begin());
@@ -227,12 +187,12 @@ int TreeNode<DataType>::nChildren() {
 
 //______________________________________________________________________________
 
-// DEPRECATED, COPIAR ITERATOR
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
 template <class DataType>
 void TreeNode<DataType>::clone(const TreeNode<DataType>& source) {
    _data = source._data;
    _parent = source._parent;
+   _childIt = source._childIt;
    _children = source._children;
 }
 
