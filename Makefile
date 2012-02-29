@@ -11,7 +11,7 @@ BIN = bin
 
 # Variables
 
-objects = $(OBJ)/Tree.o $(OBJ)/TreeNode.o $(OBJ)/TestTree.o
+objects = $(OBJ)/Tree.o $(OBJ)/TreeNode.o $(OBJ)/TestTree.o $(OBJ)/TreeGenericException.o $(OBJ)/RootNotErasableException.o
 
 # Compilation options
 
@@ -23,6 +23,14 @@ all : $(BIN)/TestTree
 
 # Compilation instructions
 
+$(OBJ)/TreeGenericException.o : $(SRC)/TreeGenericException.cpp $(HEAD)/TreeGenericException.h
+	@echo "Building TreeGenericException ..."
+	@$(CXX) $(FLAGS) $(SRC)/TreeGenericException.cpp -o $(OBJ)/TreeGenericException.o
+
+$(OBJ)/RootNotErasableException.o : $(SRC)/RootNotErasableException.cpp $(HEAD)/TreeGenericException.h $(HEAD)/RootNotErasableException.h
+	@echo "Building RootNotErasableException ..."
+	@$(CXX) $(FLAGS) $(SRC)/RootNotErasableException.cpp -o $(OBJ)/RootNotErasableException.o
+
 $(OBJ)/TreeNode.o : $(SRC)/TreeNode.cpp $(HEAD)/TreeNode.h
 	@echo "Building TreeNode ..."
 	@$(CXX) $(FLAGS) $(SRC)/TreeNode.cpp -o $(OBJ)/TreeNode.o
@@ -31,7 +39,7 @@ $(OBJ)/Tree.o : $(SRC)/Tree.cpp $(HEAD)/Tree.h $(HEAD)/TreeNode.h
 	@echo "Building Tree ..."
 	@$(CXX) $(FLAGS) $(SRC)/Tree.cpp -o $(OBJ)/Tree.o
 
-$(OBJ)/TestTree.o : $(SRC)/TestTree.cpp $(HEAD)/Tree.h
+$(OBJ)/TestTree.o : $(SRC)/TestTree.cpp $(HEAD)/Tree.h $(HEAD)/RootNotErasableException.h
 	@echo "Building TestTree ..."
 	@$(CXX) $(FLAGS) $(SRC)/TestTree.cpp -o $(OBJ)/TestTree.o
 
