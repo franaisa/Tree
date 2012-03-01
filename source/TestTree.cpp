@@ -73,13 +73,7 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   /*startEraseNode = tree.preBegin();
-   try {
-      tree.erase(startEraseNode);
-   }
-   catch(RootNotErasableException& ex) {
-      cout << ex.what() << endl;
-   }*/
+   startEraseNode = tree.preBegin();
 
    //tree.prePrint();
    //tree.postPrint();

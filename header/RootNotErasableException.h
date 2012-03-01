@@ -18,7 +18,7 @@
 
 #include "TreeGenericException.h"
 
-class RootNotErasableException : TreeGenericException {
+class RootNotErasableException : public TreeGenericException {
    public:
       explicit RootNotErasableException(const std::string& what_arg);
 };
