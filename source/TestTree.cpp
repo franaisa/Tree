@@ -46,9 +46,6 @@ int main(int argc, char** argv) {
    graftIt = it;
    tree2.pushBackChild(it, 120);
 
-   //tree2.prePrint();
-   //tree2.postPrint();
-
    Tree<int> tree(28);
    Tree<int>::PreOrderIterator preIt;
    Tree<int>::PreOrderIterator startEraseNode;
@@ -73,11 +70,6 @@ int main(int argc, char** argv) {
    preIt = preIt.children(0);
    tree.pushBackChild(preIt, 4);
 
-   startEraseNode = tree.preBegin();
-
-   //tree.prePrint();
-   //tree.postPrint();
-
    /*tree.prePrint();
    tree.chop(startEraseNode);
    tree.prePrint();*/
@@ -90,8 +82,13 @@ int main(int argc, char** argv) {
    tree.insertChild(startEraseNode, 1, 200);
    tree.prePrint();*/
 
-   //tree2.graftBack(graftIt, tree);
-   //tree2.prePrint();
+   /*cout << "tree : ";
+   tree.prePrint();
+   cout << "tree2 : ";
+   tree2.prePrint();
+   cout << "After grafting tree to tree2 on node " << *graftIt << " :" << endl;
+   tree2.graftBack(graftIt, tree);
+   tree2.prePrint();*/
 
    return 0;
 }

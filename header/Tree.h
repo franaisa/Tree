@@ -69,14 +69,16 @@ class Tree {
       inline PostOrderIterator postBegin() const;
       inline PostOrderIterator postEnd() const;
 
+      inline bool empty() const;
+
       // Member functions to erase nodes
       void erase(TreeIterator<DataType>& node) throw(RootNotErasableException);
       Tree<DataType> prune(TreeIterator<DataType>& rootNode);
       void chop(TreeIterator<DataType>& rootNode);
 
-      void graftFront(const TreeIterator<DataType>& parent, const Tree<DataType> tree) throw(std::bad_alloc);
-      void graftBack(const TreeIterator<DataType>& parent, const Tree<DataType> tree) throw(std::bad_alloc);
-      void graftAt(const TreeIterator<DataType>& parent, unsigned int position, const Tree<DataType> tree) throw(std::bad_alloc, std::out_of_range);
+      void graftFront(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
+      void graftBack(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
+      void graftAt(const TreeIterator<DataType>& parent, unsigned int position, Tree<DataType>& tree) throw(std::out_of_range);
 
       void prePrint() {
          if(_root != NULL) {
@@ -300,6 +302,13 @@ typename Tree<DataType>::PostOrderIterator Tree<DataType>::postEnd() const {
 
 //______________________________________________________________________________
 
+template <class DataType>
+inline bool Tree<DataType>::empty() const {
+   return _root == NULL ? true : false;
+}
+
+//______________________________________________________________________________
+
 // If an iterator pointing to the end is passed (iterator pointing to null) the
 // method will fail. NULL ITERATORS CAN'T BE PASSED AS AN ARGUMENT TO THIS FUNCTION
 template <class DataType>
@@ -361,82 +370,45 @@ void Tree<DataType>::chop(TreeIterator<DataType>& rootNode) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
-// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
-// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
-
-// Also, attach the new tree, don't make a copy of it.
+// The passed tree will be a subtree of '*this' tree. The given tree to be grafted
+// will be empty after the execution of this method. '*this' tree will have the
+// responsability of deallocating resources
 template <class DataType>
-void Tree<DataType>::graftFront(const TreeIterator<DataType>& parent, const Tree<DataType> tree) throw(std::bad_alloc) {
+void Tree<DataType>::graftFront(const TreeIterator<DataType>& parent, Tree<DataType>& adoptTree) {
    // The current tree adopts the new tree created and assumes the responsability
    // of liberating the corresponding resources
-   Tree<DataType>* adoptTree;
-   try {
-      adoptTree = new Tree<DataType>(tree);
-   }
-   catch(std::bad_alloc& ex) {
-      std::cerr << ex.what() << " : Failure to allocate memory for the copy of the tree that is going to be grafted" << std::endl;
-
-      // Rethrow
-      throw;
-   }
-
-   parent._pointer->_children.push_front(adoptTree->_root);
-   adoptTree->_root->_childIt = parent._pointer->_children.begin();
+   parent._pointer->_children.push_front(adoptTree._root);
+   adoptTree._root->_childIt = parent._pointer->_children.begin();
+   adoptTree._root = NULL;
 }
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
-// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
-// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
-
-// Also, attach the new tree, don't make a copy of it.
+// The passed tree will be a subtree of '*this' tree. The given tree to be grafted
+// will be empty after the execution of this method. '*this' tree will have the
+// responsability of deallocating resources
 template <class DataType>
-void Tree<DataType>::graftBack(const TreeIterator<DataType>& parent, const Tree<DataType> tree) throw(std::bad_alloc) {
+void Tree<DataType>::graftBack(const TreeIterator<DataType>& parent, Tree<DataType>& adoptTree) {
    // The current tree adopts the new tree created and assumes the responsability
    // of liberating the corresponding resources
-   Tree<DataType>* adoptTree;
-   try {
-      adoptTree = new Tree<DataType>(tree);
-   }
-   catch(std::bad_alloc& ex) {
-      std::cerr << ex.what() << " : Failure to allocate memory for the copy of the tree that is going to be grafted" << std::endl;
-
-      // Rethrow
-      throw;
-   }
-
-   parent._pointer->_children.push_back(adoptTree->_root);
-   adoptTree->_root->_childIt = --(parent._pointer->_children.end());
+   parent._pointer->_children.push_back(adoptTree._root);
+   adoptTree._root->_childIt = --(parent._pointer->_children.end());
+   adoptTree._root = NULL;
 }
 
 //______________________________________________________________________________
 
-// DEPRECATED <- THROW EXCEPTIONS AND COPY THE TREE WITH A CUSTOM FUNCTION, NOT
-// WITH A DYNAMIC TREE, BECAUSE IF WE ADD MORE DYNAMIC FIELDS, THEY WON'T BE
-// DEALLOCATED BY THE ADOPTING TREE, HENCE, WE'LL HAVE MEMORY LEAKS
-
-// Also, attach the new tree, don't make a copy of it.
+// The passed tree will be a subtree of '*this' tree. The given tree to be grafted
+// will be empty after the execution of this method. '*this' tree will have the
+// responsability of deallocating resources
 template <class DataType>
-void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, unsigned int position, const Tree<DataType> tree)
-   throw(std::bad_alloc, std::out_of_range)
+void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, unsigned int position, Tree<DataType>& adoptTree)
+   throw(std::out_of_range)
 {
    // The current tree adopts the new tree created and assumes the responsability
    // of liberating the corresponding resources
-   Tree<DataType>* adoptTree;
-   try {
-      adoptTree = new Tree<DataType>(tree);
-   }
-   catch(std::bad_alloc& ex) {
-      std::cerr << ex.what() << " : Failure to allocate memory for the copy of the tree that is going to be grafted" << std::endl;
-
-      // Rethrow
-      throw;
-   }
 
    if(position < 0 || position >= parent._pointer->_children.size()) {
-      std::cerr << "Error: Index out of bounds" << std::endl;
       throw std::out_of_range("Error: Attempting to graft a tree at a children index that is out of bounds");
    }
 
@@ -445,8 +417,9 @@ void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, unsigned int 
       // Nothing to do
    }
 
-   parent._pointer->_children.insert(it, adoptTree->_root);
-   adoptTree->_root->_childIt = --it;
+   parent._pointer->_children.insert(it, adoptTree._root);
+   adoptTree._root->_childIt = --it;
+   adoptTree._root = NULL;
 }
 
 //______________________________________________________________________________
