@@ -14,6 +14,7 @@
  */
 
 #include <iostream>
+#include <list>
 #include "Tree.h"
 
 using namespace std;
@@ -23,52 +24,95 @@ int main(int argc, char** argv) {
    Tree<int>::PreOrderIterator graftIt;
    Tree<int> tree2(10);
 
+   // Retrieving pre-order iterator to root node
    it = tree2.preBegin();
    tree2.pushBackChild(it, 20);
    tree2.pushBackChild(it, 30);
    tree2.pushBackChild(it, 40);
    tree2.pushBackChild(it, 50);
 
-   it = it.children(1);
+   // Get the second child
+   it = it.firstChild();
+   it = it.nextChild();
+
+   // Attach to the second child
    tree2.pushBackChild(it, 60);
    tree2.pushBackChild(it, 70);
 
-   it = it.children(1);
+   // Get the second child
+   it = it.firstChild();
+   it = it.nextChild();
+
+   // Attach to the second child
    tree2.pushBackChild(it, 80);
    tree2.pushBackChild(it, 90);
    tree2.pushBackChild(it, 100);
 
-   it = it.children(2);
+   // Get the third child
+   it = it.firstChild();
+   it = it.nextChild();
+   it = it.nextChild();
+
+   // Attach to the third child
    tree2.pushBackChild(it, 110);
 
+   // Retrieving pre-order iterator to root node
    it = tree2.preBegin();
-   it = it.children(3);
+
+   // Get the fourth child
+   it = it.firstChild();
+   it = it.nextChild();
+   it = it.nextChild();
+   it = it.nextChild();
+
+   // The fourth child is going to be the grafting node
    graftIt = it;
    tree2.pushBackChild(it, 120);
 
+   // The root node for the new tree is 28
    Tree<int> tree(28);
    Tree<int>::PreOrderIterator preIt;
    Tree<int>::PreOrderIterator startEraseNode;
 
+   // Retrieving pre-order iterator to root node
    preIt = tree.preBegin();
    tree.pushBackChild(preIt, 7);
    tree.pushBackChild(preIt, 5);
 
-   preIt = preIt.children(0);
+   // Get the first child
+   preIt = preIt.firstChild();
+
    startEraseNode = preIt; // Node 7
+   // Attach to the first child
    tree.pushBackChild(preIt, 2);
    tree.pushBackChild(preIt, 6);
 
-   preIt = preIt.children(1);
+   // Get the second child
+   preIt = preIt.firstChild();
+   preIt = preIt.nextChild();
+
+   // Attach to the second child
    tree.pushBackChild(preIt, 5);
    tree.pushBackChild(preIt, 11);
 
+   // Retrieving pre-order iterator to root node
    preIt = tree.preBegin();
-   preIt = preIt.children(1);
+
+   // Get the second child
+   preIt = preIt.firstChild();
+   preIt = preIt.nextChild();
+
+   // Attach to the second child
    tree.pushBackChild(preIt, 9);
 
-   preIt = preIt.children(0);
+   // Get the first child
+   preIt = preIt.firstChild();
+
+   // Attach to the first child
    tree.pushBackChild(preIt, 4);
+
+   tree.prePrint();
+   tree2.prePrint();
 
    /*tree.prePrint();
    tree.chop(startEraseNode);

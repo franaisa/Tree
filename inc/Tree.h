@@ -242,6 +242,7 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
 
 //______________________________________________________________________________
 
+// DEPRECATED <- IMPLEMENT IT, WITH LIST ITERATORS
 template <class DataType>
 void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data)
    throw(std::bad_alloc, std::out_of_range)
@@ -398,6 +399,7 @@ void Tree<DataType>::graftBack(const TreeIterator<DataType>& parent, Tree<DataTy
 
 //______________________________________________________________________________
 
+// DEPRECATED <- IMPLEMENT IT WITH LIST ITERATORS
 // The passed tree will be a subtree of '*this' tree. The given tree to be grafted
 // will be empty after the execution of this method. '*this' tree will have the
 // responsability of deallocating resources
@@ -551,8 +553,16 @@ class TreeIterator {
       // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
       virtual TreeIterator<DataType>& parent() = 0;
       virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range) = 0;
+
+      inline unsigned int nChildren();
+      virtual TreeIterator<DataType>& firstChild() = 0;
+      virtual TreeIterator<DataType>& lastChild() = 0;
+      virtual TreeIterator<DataType>& nextChild() = 0;
+      virtual TreeIterator<DataType>& previousChild() = 0;
    //protected:
       TreeIterator(TreeNode<DataType>* data);
+
+      typename std::list< TreeNode<DataType>* >::iterator _currentChild;
    private:
       friend class Tree<DataType>;
 
@@ -645,6 +655,13 @@ DataType& TreeIterator<DataType>::operator*() const {
 //______________________________________________________________________________
 
 template <class DataType>
+TreeNode<DataType>* TreeIterator<DataType>::getPointer() {
+   return _pointer;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
 void TreeIterator<DataType>::setPointer(TreeNode<DataType>* newPointer) {
    _pointer = newPointer;
 }
@@ -652,8 +669,8 @@ void TreeIterator<DataType>::setPointer(TreeNode<DataType>* newPointer) {
 //______________________________________________________________________________
 
 template <class DataType>
-TreeNode<DataType>* TreeIterator<DataType>::getPointer() {
-   return _pointer;
+unsigned int TreeIterator<DataType>::nChildren() {
+   return _pointer->_children.size();
 }
 
 //______________________________________________________________________________
@@ -696,6 +713,11 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
 
       virtual TreeIterator<DataType>& parent();
       virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
+
+      virtual TreeIterator<DataType>& firstChild();
+      virtual TreeIterator<DataType>& lastChild();
+      virtual TreeIterator<DataType>& nextChild();
+      virtual TreeIterator<DataType>& previousChild();
    //private:
       friend PreOrderIterator Tree<DataType>::preBegin() const;
       friend PreOrderIterator Tree<DataType>::preEnd() const;
@@ -836,8 +858,59 @@ TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::children(int child) th
    return tmp;
 }
 
+//______________________________________________________________________________
 
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::firstChild() {
+   static Tree<DataType>::PreOrderIterator tmp;
 
+   // Update the current child selected
+   TreeIterator<DataType>::_currentChild = TreeIterator<DataType>::getPointer()->_children.begin();
+
+   // Build a pre-order iterator
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::lastChild() {
+   static Tree<DataType>::PreOrderIterator tmp;
+
+   // Update the current child selected
+   TreeIterator<DataType>::_currentChild = --(TreeIterator<DataType>::getPointer()->_children.end());
+
+   // Build a pre-order iterator
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::nextChild() {
+   static Tree<DataType>::PreOrderIterator tmp;
+
+   // Update iterator position
+   ++TreeIterator<DataType>::_currentChild;
+
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::previousChild() {
+   static Tree<DataType>::PreOrderIterator tmp;
+
+   // Update iterator position
+   --TreeIterator<DataType>::_currentChild;
+
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
 
 
 
@@ -882,6 +955,11 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
 
       virtual TreeIterator<DataType>& parent();
       virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
+
+      virtual TreeIterator<DataType>& firstChild();
+      virtual TreeIterator<DataType>& lastChild();
+      virtual TreeIterator<DataType>& nextChild();
+      virtual TreeIterator<DataType>& previousChild();
    //private:
       friend PostOrderIterator Tree<DataType>::postBegin() const;
       friend PostOrderIterator Tree<DataType>::postEnd() const;
@@ -1014,6 +1092,60 @@ template <class DataType>
 TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::children(int child) throw (std::out_of_range) {
    static Tree<DataType>::PostOrderIterator tmp;
    tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child)); // std::out_of_range
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::firstChild() {
+   static Tree<DataType>::PostOrderIterator tmp;
+
+   // Update the current child selected
+   TreeIterator<DataType>::_currentChild = TreeIterator<DataType>::getPointer()->_children.begin();
+
+   // Build a post-order iterator
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::lastChild() {
+   static Tree<DataType>::PostOrderIterator tmp;
+
+   // Update the current child selected
+   TreeIterator<DataType>::_currentChild = --(TreeIterator<DataType>::getPointer()->_children.end());
+
+   // Build a post-order iterator
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::nextChild() {
+   static Tree<DataType>::PostOrderIterator tmp;
+
+   // Update iterator position
+   ++TreeIterator<DataType>::_currentChild;
+
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
+   return tmp;
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::previousChild() {
+   static Tree<DataType>::PostOrderIterator tmp;
+
+   // Update iterator position
+   --TreeIterator<DataType>::_currentChild;
+
+   tmp.setPointer(*TreeIterator<DataType>::_currentChild);
    return tmp;
 }
 
