@@ -64,7 +64,6 @@ class TreeNode {
       friend std::ostream& operator<< <DataType>(std::ostream& out, const TreeNode<DataType>& node);
 
       inline TreeNode<DataType>* const parent() const;
-      inline TreeNode<DataType>* const children(unsigned int nChild) throw(std::out_of_range);
       inline int nChildren();
    private:
       DataType _data;
@@ -159,23 +158,6 @@ std::ostream& operator<<(std::ostream& out, const TreeNode<DataType>& node) {
 template <class DataType>
 TreeNode<DataType>* const TreeNode<DataType>::parent() const {
    return _parent;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeNode<DataType>* const TreeNode<DataType>::children(unsigned int nChild) throw(std::out_of_range) {
-   // If the index is out of bounds, throw an exception
-   if(nChild < 0 || nChild >= _children.size()) {
-      throw std::out_of_range("Given index is out of bounds for children of the current node");
-   }
-
-   typename std::list<TreeNode<DataType>*>::iterator it(_children.begin());
-   for(unsigned int i = 0; it != _children.end(); ++it, ++i)
-      if(i == nChild)
-         return *it;
-
-   return NULL;
 }
 
 //______________________________________________________________________________

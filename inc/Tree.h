@@ -28,8 +28,6 @@
 template <class T>
 class TreeIterator;
 
-//class RootNotErasableException;
-
 
 // *****************************************************************************
 //                                  TREE HEADER
@@ -57,7 +55,8 @@ class Tree {
       // Return iterator to child inserted
       void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
       void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
-      void insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data) throw(std::bad_alloc, std::out_of_range);
+      // DEPRECATED <- ADD EXCEPTION IF ITERATOR IS INVALID
+      void insertChild(const TreeIterator<DataType>& parent, const TreeIterator<DataType>& childNode, const DataType& data) throw(std::bad_alloc);
 
       // Member functions to obtain iterators
       // Note that they could have been implemented returning just one kind of
@@ -78,7 +77,8 @@ class Tree {
 
       void graftFront(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
       void graftBack(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
-      void graftAt(const TreeIterator<DataType>& parent, unsigned int position, Tree<DataType>& tree) throw(std::out_of_range);
+      // DEPRECATED <- ADD EXCEPTION IF ITERATOR IS INVALID
+      void graftAt(const TreeIterator<DataType>& parent, const TreeIterator<DataType>& childNode, Tree<DataType>& adoptTree);
 
       void prePrint() {
          if(_root != NULL) {
@@ -242,10 +242,11 @@ void Tree<DataType>::pushBackChild(const TreeIterator<DataType>& parent, const D
 
 //______________________________________________________________________________
 
-// DEPRECATED <- IMPLEMENT IT, WITH LIST ITERATORS
 template <class DataType>
-void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned int position, const DataType& data)
-   throw(std::bad_alloc, std::out_of_range)
+void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent,
+                                 const TreeIterator<DataType>& childNode,
+                                 const DataType& data)
+   throw(std::bad_alloc)
 {
 
    TreeNode<DataType>* child;
@@ -253,22 +254,14 @@ void Tree<DataType>::insertChild(const TreeIterator<DataType>& parent, unsigned 
       child = new TreeNode<DataType>(data, parent._pointer);
    }
    catch(std::bad_alloc& ex) {
-      std::cerr << ex.what() << " : Failure to allocate memory for the new child" << std::endl;
+      std::cerr << ex.what() << " : Failure to allocate memory for the new child when inserting" << std::endl;
 
       // Since we are not inside the constructor, the destructor for this object
       // will get called, hence, there won't be any memory leak
       throw;
    }
 
-   if(position < 0 || position >= parent._pointer->_children.size()) {
-      throw std::out_of_range("Attempting to insert a child in a position that is out of bounds");
-   }
-
-   typename std::list< TreeNode<DataType>* >::iterator it(parent._pointer->_children.begin());
-   for(unsigned int i = 0; i < position; ++i, ++it) {
-      // Nothing to do
-   }
-
+   typename std::list< TreeNode<DataType>* >::iterator it(childNode._pointer->_childIt);
    parent._pointer->_children.insert(it, child);
    child->_childIt = --it;
 }
@@ -399,26 +392,9 @@ void Tree<DataType>::graftBack(const TreeIterator<DataType>& parent, Tree<DataTy
 
 //______________________________________________________________________________
 
-// DEPRECATED <- IMPLEMENT IT WITH LIST ITERATORS
-// The passed tree will be a subtree of '*this' tree. The given tree to be grafted
-// will be empty after the execution of this method. '*this' tree will have the
-// responsability of deallocating resources
 template <class DataType>
-void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, unsigned int position, Tree<DataType>& adoptTree)
-   throw(std::out_of_range)
-{
-   // The current tree adopts the new tree created and assumes the responsability
-   // of liberating the corresponding resources
-
-   if(position < 0 || position >= parent._pointer->_children.size()) {
-      throw std::out_of_range("Error: Attempting to graft a tree at a children index that is out of bounds");
-   }
-
-   typename std::list< TreeNode<DataType>* >::iterator it(parent._pointer->_children.begin());
-   for(unsigned int i = 0; i < position; ++i, ++it) {
-      // Nothing to do
-   }
-
+void Tree<DataType>::graftAt(const TreeIterator<DataType>& parent, const TreeIterator<DataType>& childNode, Tree<DataType>& adoptTree) {
+   typename std::list< TreeNode<DataType>* >::iterator it(childNode._pointer->_childIt);
    parent._pointer->_children.insert(it, adoptTree._root);
    adoptTree._root->_childIt = --it;
    adoptTree._root = NULL;
@@ -563,7 +539,7 @@ class TreeIterator {
       TreeIterator(TreeNode<DataType>* data);
 
       typename std::list< TreeNode<DataType>* >::iterator _currentChild;
-   private:
+   //private:
       friend class Tree<DataType>;
 
       TreeNode<DataType>* _pointer;
