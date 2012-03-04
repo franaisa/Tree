@@ -46,35 +46,35 @@ std::ostream& operator<< (std::ostream &out, const TreeNode<T>& node);
 // *****************************************************************************
 
 
-template <class DataType>
+template <class T>
 class TreeNode {
    public:
       TreeNode();
-      TreeNode(const DataType& data);
-      TreeNode(const DataType& data, TreeNode<DataType>* parent);
+      TreeNode(const T& data);
+      TreeNode(const T& data, TreeNode<T>* parent);
       // Careful!!! It copies the references
-      TreeNode(const TreeNode<DataType>& source);
+      TreeNode(const TreeNode<T>& source);
 
       virtual ~TreeNode();
 
       // WE NEED TO RETURN AN ITERATOR
-      TreeNode<DataType>& operator=(const TreeNode<DataType>& rhs);
-      TreeNode<DataType>& operator=(const DataType& rightData);
+      TreeNode<T>& operator=(const TreeNode<T>& rhs);
+      TreeNode<T>& operator=(const T& rightData);
 
-      friend std::ostream& operator<< <DataType>(std::ostream& out, const TreeNode<DataType>& node);
+      friend std::ostream& operator<< <T>(std::ostream& out, const TreeNode<T>& node);
 
-      inline TreeNode<DataType>* const parent() const;
+      inline TreeNode<T>* const parent() const;
       inline int nChildren();
    private:
-      DataType _data;
-      TreeNode<DataType>* _parent;
-      typename std::list< TreeNode<DataType>* >::iterator _childIt; 
-      std::list< TreeNode<DataType>* > _children;
+      T _data;
+      TreeNode<T>* _parent;
+      typename std::list< TreeNode<T>* >::iterator _childIt;
+      std::list< TreeNode<T>* > _children;
 
-      friend class Tree<DataType>;
-      friend class TreeIterator<DataType>;
+      friend class Tree<T>;
+      friend class TreeIterator<T>;
 
-      void clone(const TreeNode<DataType>& source);
+      void clone(const TreeNode<T>& source);
 };
 
 
@@ -83,32 +83,32 @@ class TreeNode {
 // *****************************************************************************
 
 
-template <class DataType>
-TreeNode<DataType>::TreeNode() : _parent(NULL) {
+template <class T>
+TreeNode<T>::TreeNode() : _parent(NULL) {
    // Nothing to do
 }
 
 //______________________________________________________________________________
 
 // Once created, the iterator has to be modified manually
-template <class DataType>
-TreeNode<DataType>::TreeNode(const DataType& data) : _data(data), _parent(NULL) {
+template <class T>
+TreeNode<T>::TreeNode(const T& data) : _data(data), _parent(NULL) {
    // Nothing to do
 }
 
 //______________________________________________________________________________
 
 // Once created, the iterator has to be modified manually
-template <class DataType>
-TreeNode<DataType>::TreeNode(const DataType& data, TreeNode<DataType>* parent) : _data(data), _parent(parent) {
+template <class T>
+TreeNode<T>::TreeNode(const T& data, TreeNode<T>* parent) : _data(data), _parent(parent) {
    // Nothing to do
 }
 
 //______________________________________________________________________________
 
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
-template <class DataType>
-TreeNode<DataType>::TreeNode(const TreeNode<DataType>& source) :
+template <class T>
+TreeNode<T>::TreeNode(const TreeNode<T>& source) :
    _data(source._data),
    _parent(source._parent),
    _childIt(source._childIt),
@@ -119,16 +119,16 @@ TreeNode<DataType>::TreeNode(const TreeNode<DataType>& source) :
 
 //______________________________________________________________________________
 
-template <class DataType>
-TreeNode<DataType>::~TreeNode() {
+template <class T>
+TreeNode<T>::~TreeNode() {
    // Nothing to do
    // The destructors of the objects contained are called here automatically
 }
 
 //______________________________________________________________________________
 
-template <class DataType>
-TreeNode<DataType>& TreeNode<DataType>::operator=(const TreeNode<DataType>& rhs) {
+template <class T>
+TreeNode<T>& TreeNode<T>::operator=(const TreeNode<T>& rhs) {
    if(this != &rhs)
       clone(rhs);
 
@@ -137,8 +137,8 @@ TreeNode<DataType>& TreeNode<DataType>::operator=(const TreeNode<DataType>& rhs)
 
 //______________________________________________________________________________
 
-template <class DataType>
-TreeNode<DataType>& TreeNode<DataType>::operator=(const DataType& rightData) {
+template <class T>
+TreeNode<T>& TreeNode<T>::operator=(const T& rightData) {
    _data = rightData;
 
    return *this;
@@ -146,8 +146,8 @@ TreeNode<DataType>& TreeNode<DataType>::operator=(const DataType& rightData) {
 
 //______________________________________________________________________________
 
-template <class DataType>
-std::ostream& operator<<(std::ostream& out, const TreeNode<DataType>& node) {
+template <class T>
+std::ostream& operator<<(std::ostream& out, const TreeNode<T>& node) {
    out << node._data;
 
    return out;
@@ -155,23 +155,23 @@ std::ostream& operator<<(std::ostream& out, const TreeNode<DataType>& node) {
 
 //______________________________________________________________________________
 
-template <class DataType>
-TreeNode<DataType>* const TreeNode<DataType>::parent() const {
+template <class T>
+TreeNode<T>* const TreeNode<T>::parent() const {
    return _parent;
 }
 
 //______________________________________________________________________________
 
-template <class DataType>
-int TreeNode<DataType>::nChildren() {
+template <class T>
+int TreeNode<T>::nChildren() {
    return _children.size();
 }
 
 //______________________________________________________________________________
 
 // COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
-template <class DataType>
-void TreeNode<DataType>::clone(const TreeNode<DataType>& source) {
+template <class T>
+void TreeNode<T>::clone(const TreeNode<T>& source) {
    _data = source._data;
    _parent = source._parent;
    _childIt = source._childIt;
