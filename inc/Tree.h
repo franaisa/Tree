@@ -681,9 +681,8 @@ template <class DataType>
 class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
    public:
       PreOrderIterator();
-      PreOrderIterator(const PostOrderIterator& postIt) : PostOrderIterator(postIt._pointer) {
-         // Nothing to do
-      };
+      // Converting constructor
+      PreOrderIterator(const PostOrderIterator& postIt);
       PreOrderIterator(const PreOrderIterator& source);
 
       virtual ~PreOrderIterator();
@@ -705,7 +704,6 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
 
       PreOrderIterator(TreeNode<DataType>* data);
 
-      //std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
       std::stack< std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator> > _pathStack;
 };
 
@@ -718,6 +716,13 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
 template <class DataType>
 Tree<DataType>::PreOrderIterator::PreOrderIterator() {
    // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+Tree<DataType>::PreOrderIterator::PreOrderIterator(const PostOrderIterator& postIt) {
+   TreeIterator<DataType>::setPointer(postIt._pointer);
 }
 
 //______________________________________________________________________________
@@ -908,6 +913,8 @@ template <class DataType>
 class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
    public:
       PostOrderIterator();
+      // Converting constructor
+      PostOrderIterator(const PreOrderIterator& preIt);
       // If we have to return an iterator from a function
       // DO NOT ever construct it using this constructor, use the one that's private
       PostOrderIterator(const PostOrderIterator& source);
@@ -954,6 +961,19 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
 template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator() : _justCreated(false) {
    // Nothing to do
+}
+
+//______________________________________________________________________________
+
+template <class DataType>
+Tree<DataType>::PostOrderIterator::PostOrderIterator(const PreOrderIterator& preIt) {
+   TreeIterator<DataType>::setPointer(preIt._pointer);
+   TreeNode<DataType>* ptr = preIt._pointer;
+   if(ptr != NULL) {
+      _pathStack.push(std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(ptr, ptr->_children.begin()));
+      operator++();
+      _justCreated = true;
+   }
 }
 
 //______________________________________________________________________________
@@ -1006,7 +1026,7 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
          // Put the first element to be printed at the top of the stack
          TreeNode<DataType>* rhsPtr(TreeIterator<DataType>::getPointer());
          if(rhsPtr != NULL) {
-            _pathStack.push(std::pair<TreeNode<DataType>*, int>(rhsPtr, 0));
+            _pathStack.push(std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(rhsPtr, rhsPtr->_children.begin()));
             operator++();
          }
       }
