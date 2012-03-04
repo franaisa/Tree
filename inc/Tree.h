@@ -55,7 +55,7 @@ class Tree {
       // Return iterator to child inserted
       void pushFrontChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
       void pushBackChild(const TreeIterator<DataType>& parent, const DataType& data) throw(std::bad_alloc);
-      // DEPRECATED <- ADD EXCEPTION IF ITERATOR IS INVALID
+      // Use with care, iterator must be valid
       void insertChild(const TreeIterator<DataType>& parent, const TreeIterator<DataType>& childNode, const DataType& data) throw(std::bad_alloc);
 
       // Member functions to obtain iterators
@@ -77,7 +77,7 @@ class Tree {
 
       void graftFront(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
       void graftBack(const TreeIterator<DataType>& parent, Tree<DataType>& tree);
-      // DEPRECATED <- ADD EXCEPTION IF ITERATOR IS INVALID
+      // Use with care, iterator must be valid
       void graftAt(const TreeIterator<DataType>& parent, const TreeIterator<DataType>& childNode, Tree<DataType>& adoptTree);
 
       void prePrint() {
@@ -528,7 +528,6 @@ class TreeIterator {
       // THIS TWO METHODS MUST NEVER BE USED TO MODIFY THE RETURNED VALUE
       // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
       virtual TreeIterator<DataType>& parent() = 0;
-      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range) = 0;
 
       inline unsigned int nChildren();
       virtual TreeIterator<DataType>& firstChild() = 0;
@@ -538,6 +537,10 @@ class TreeIterator {
    //protected:
       TreeIterator(TreeNode<DataType>* data);
 
+      // _currentChild need not be initialized because it should always be called
+      // by firstChild() or lastChild(), meaning that its value will be override
+      // during each call, furthermore, this iterator shouldn't be copied when using
+      // operator= because we want to enforce the use of firstChild() and lastChild()
       typename std::list< TreeNode<DataType>* >::iterator _currentChild;
    //private:
       friend class Tree<DataType>;
@@ -678,6 +681,9 @@ template <class DataType>
 class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
    public:
       PreOrderIterator();
+      PreOrderIterator(const PostOrderIterator& postIt) : PostOrderIterator(postIt._pointer) {
+         // Nothing to do
+      };
       PreOrderIterator(const PreOrderIterator& source);
 
       virtual ~PreOrderIterator();
@@ -688,7 +694,6 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
       PreOrderIterator operator++(int notUsed);
 
       virtual TreeIterator<DataType>& parent();
-      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
 
       virtual TreeIterator<DataType>& firstChild();
       virtual TreeIterator<DataType>& lastChild();
@@ -700,7 +705,8 @@ class Tree<DataType>::PreOrderIterator : public TreeIterator<DataType> {
 
       PreOrderIterator(TreeNode<DataType>* data);
 
-      std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
+      //std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
+      std::stack< std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator> > _pathStack;
 };
 
 
@@ -756,7 +762,8 @@ typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::ope
 // THE CURRENT NODE CAN'T BE NULL
 template <class DataType>
 typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::operator++() {
-   std::pair<TreeNode<DataType>*, int> topNode;
+   std::pair< TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator > topNode;
+   typename std::list< TreeNode<DataType>* >::iterator tmp;
    // nodePt is the pointer to the TreeNode stored inside the TreeIterator
    TreeNode<DataType>* nodePt = TreeIterator<DataType>::getPointer();
 
@@ -766,28 +773,31 @@ typename Tree<DataType>::PreOrderIterator& Tree<DataType>::PreOrderIterator::ope
    if(nChildren > 0) {
       // If the current node is the one on the top of the stack, get the next
       // child to visit
-      int nextChild;
+      typename std::list< TreeNode<DataType>* >::iterator nextChild;
       if(_pathStack.empty() || nodePt != _pathStack.top().first) {
-         nextChild = 0;
-         _pathStack.push(std::pair<TreeNode<DataType>*, int>(nodePt, 1));
+         nextChild = nodePt->_children.begin();
+         tmp = nextChild;
+         _pathStack.push(std::pair< TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(nodePt, ++tmp));
       }
       else {
          topNode = _pathStack.top();
          nextChild = topNode.second;
-         _pathStack.top() = std::pair<TreeNode<DataType>*, int>(topNode.first, topNode.second + 1);
+         tmp = nextChild;
+         _pathStack.top() = std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(topNode.first, ++tmp);
       }
 
-      TreeIterator<DataType>::setPointer(nodePt->children(nextChild));
+      TreeIterator<DataType>::setPointer(*nextChild);
    }
    else {
       while(!_pathStack.empty()) {
          topNode = _pathStack.top();
          // If there are children that haven't been visited
-         if(topNode.second < topNode.first->nChildren()) {
+         if(topNode.second != topNode.first->_children.end()) {
             // Current node is the next child to visit
-            TreeIterator<DataType>::setPointer(topNode.first->children(topNode.second));
+            tmp = topNode.second;
+            TreeIterator<DataType>::setPointer(*topNode.second);
             // Update next child to be visited
-            _pathStack.top() = std::pair<TreeNode<DataType>*, int>(topNode.first, topNode.second + 1);
+            _pathStack.top() = std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator>(topNode.first, ++tmp);
 
             return *this;
          }
@@ -822,15 +832,6 @@ template <class DataType>
 TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::parent() {
    static Tree<DataType>::PreOrderIterator tmp;
    tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
-   return tmp;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>& Tree<DataType>::PreOrderIterator::children(int child) throw(std::out_of_range) {
-   static Tree<DataType>::PreOrderIterator tmp;
-   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child)); // throws std::out_of_range
    return tmp;
 }
 
@@ -930,7 +931,6 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
       }
 
       virtual TreeIterator<DataType>& parent();
-      virtual TreeIterator<DataType>& children(int child) throw (std::out_of_range);
 
       virtual TreeIterator<DataType>& firstChild();
       virtual TreeIterator<DataType>& lastChild();
@@ -942,7 +942,7 @@ class Tree<DataType>::PostOrderIterator : public TreeIterator<DataType> {
 
       PostOrderIterator(TreeNode<DataType>* data);
 
-      std::stack< std::pair<TreeNode<DataType>*, int> > _pathStack;
+      std::stack< std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator> > _pathStack;
       bool _justCreated;
 };
 
@@ -962,7 +962,7 @@ template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator(TreeNode<DataType>* data) : TreeIterator<DataType>(data) {
    TreeNode<DataType>* ptr = TreeIterator<DataType>::getPointer();
    if(ptr != NULL) {
-      _pathStack.push(std::pair<TreeNode<DataType>*, int>(ptr, 0));
+      _pathStack.push(std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(ptr, ptr->_children.begin()));
       operator++();
       _justCreated = true;
    }
@@ -974,7 +974,7 @@ template <class DataType>
 Tree<DataType>::PostOrderIterator::PostOrderIterator(const PostOrderIterator& source) : TreeIterator<DataType>(source) {
    TreeNode<DataType>* ptr = TreeIterator<DataType>::getPointer();
    if(ptr != NULL) {
-      _pathStack.push(std::pair<TreeNode<DataType>*, int>(ptr, 0));
+      _pathStack.push(std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator >(ptr, ptr->_children.begin()));
       operator++();
       _justCreated = true;
    }
@@ -1022,15 +1022,18 @@ typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::o
 
 template <class DataType>
 typename Tree<DataType>::PostOrderIterator& Tree<DataType>::PostOrderIterator::operator++() {
+   typename std::list< TreeNode<DataType>* >::iterator tmp;
+
    // Raise a flag indicating that this iterator is no longer on the initialization state
    _justCreated = false;
    while(!_pathStack.empty()) {
-      std::pair<TreeNode<DataType>*, int> topNode = _pathStack.top();
+      std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator> topNode = _pathStack.top();
 
       // If there are children nodes non explored, find the last one
-      while(topNode.second < topNode.first->nChildren()) {
-         _pathStack.top() = std::pair<TreeNode<DataType>*, int>(topNode.first, topNode.second + 1);
-         _pathStack.push(std::pair<TreeNode<DataType>*, int>(topNode.first->children(topNode.second), 0));
+      while(topNode.second != topNode.first->_children.end()) {
+         tmp = topNode.second;
+         _pathStack.top() = std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator>(topNode.first, ++tmp);
+         _pathStack.push(std::pair<TreeNode<DataType>*, typename std::list< TreeNode<DataType>* >::iterator>(*topNode.second, (*topNode.second)->_children.begin()));
          topNode = _pathStack.top();
       }
 
@@ -1059,15 +1062,6 @@ template <class DataType>
 TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::parent() {
    static Tree<DataType>::PostOrderIterator tmp;
    tmp.setPointer(TreeIterator<DataType>::getPointer()->_parent);
-   return tmp;
-}
-
-//______________________________________________________________________________
-
-template <class DataType>
-TreeIterator<DataType>& Tree<DataType>::PostOrderIterator::children(int child) throw (std::out_of_range) {
-   static Tree<DataType>::PostOrderIterator tmp;
-   tmp.setPointer(TreeIterator<DataType>::getPointer()->children(child)); // std::out_of_range
    return tmp;
 }
 

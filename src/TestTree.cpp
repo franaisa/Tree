@@ -111,7 +111,8 @@ int main(int argc, char** argv) {
    // Attach to the first child
    tree.pushBackChild(preIt, 4);
 
-   //tree.prePrint();
+   tree.prePrint();
+   tree.postPrint();
    //tree2.prePrint();
 
    /*tree.prePrint();
@@ -131,7 +132,7 @@ int main(int argc, char** argv) {
 
    tree.prePrint();*/
 
-   cout << "tree : ";
+   /*cout << "tree : ";
    tree.prePrint();
    cout << "tree2 : ";
    tree2.prePrint();
@@ -140,7 +141,7 @@ int main(int argc, char** argv) {
    preIt = graftIt.firstChild();
    cout << "In the position of its first child" << endl;
    tree2.graftAt(graftIt, preIt, tree);
-   tree2.prePrint();
+   tree2.prePrint();*/
 
    return 0;
 }
