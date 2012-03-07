@@ -19,6 +19,12 @@
 
 using namespace std;
 
+// *****************************************************************************
+//                             FUNCTION DEFINITIONS
+// *****************************************************************************
+
+
+// Print a tree in pre-order
 template <class T>
 void prePrint(const Tree<T>& tree) {
    for(typename Tree<T>::PreOrderIterator it(tree.preBegin()); it != tree.preEnd(); ++it) {
@@ -27,6 +33,9 @@ void prePrint(const Tree<T>& tree) {
    cout << endl;
 }
 
+// _____________________________________________________________________________
+
+// Print a tree in post-order
 template <class T>
 void postPrint(const Tree<T>& tree) {
    for(typename Tree<T>::PostOrderIterator it(tree.postBegin()); it != tree.postEnd(); ++it) {
@@ -35,58 +44,11 @@ void postPrint(const Tree<T>& tree) {
    cout << endl;
 }
 
-int main(int argc, char** argv) {
-   Tree<int>::PreOrderIterator it;
-   Tree<int>::PreOrderIterator graftIt;
-   Tree<int> tree2(10);
+// _____________________________________________________________________________
 
-   // Retrieving pre-order iterator to root node
-   it = tree2.preBegin();
-   tree2.pushBackChild(it, 20);
-   tree2.pushBackChild(it, 30);
-   tree2.pushBackChild(it, 40);
-   tree2.pushBackChild(it, 50);
-
-   // Get the second child
-   it = it.firstChild();
-   it = it.nextChild();
-
-   // Attach to the second child
-   tree2.pushBackChild(it, 60);
-   tree2.pushBackChild(it, 70);
-
-   // Get the second child
-   it = it.firstChild();
-   it = it.nextChild();
-
-   // Attach to the second child
-   tree2.pushBackChild(it, 80);
-   tree2.pushBackChild(it, 90);
-   tree2.pushBackChild(it, 100);
-
-   // Get the third child
-   it = it.firstChild();
-   it = it.nextChild();
-   it = it.nextChild();
-
-   // Attach to the third child
-   tree2.pushBackChild(it, 110);
-
-   // Retrieving pre-order iterator to root node
-   it = tree2.preBegin();
-
-   // Get the fourth child
-   it = it.firstChild();
-   it = it.nextChild();
-   it = it.nextChild();
-   it = it.nextChild();
-
-   // The fourth child is going to be the grafting node
-   graftIt = it;
-   tree2.pushBackChild(it, 120);
-
-   // The root node for the new tree is 28
-   Tree<int> tree(28);
+Tree<int> wikipediaTree() {
+   // The root node for the new tree is 2
+   Tree<int> tree(2);
    Tree<int>::PreOrderIterator preIt;
    Tree<int>::PreOrderIterator startEraseNode;
 
@@ -127,37 +89,74 @@ int main(int argc, char** argv) {
    // Attach to the first child
    tree.pushBackChild(preIt, 4);
 
-   //prePrint(tree);
-   //postPrint(tree);
-   //prePrint(tree2);
+   return tree;
+}
 
-   /*prePrint(tree);
-   tree.chop(startEraseNode);
-   prePrint(tree);*/
+// _____________________________________________________________________________
 
-   /*prePrint(tree);
-   tree.erase(startEraseNode);
-   prePrint(tree);*/
-
-   /*prePrint(tree);
-
-   preIt = startEraseNode.firstChild();
-   preIt = startEraseNode.nextChild();
-
-   tree.insertChild(startEraseNode, preIt, 200);
-
-   prePrint(tree);*/
-
-   /*cout << "tree : ";
+void chopTest(Tree<int>& tree, Tree<int>::PreOrderIterator& it) {
+   cout << "CHOP TEST" << endl;
+   cout << "The subtree that hangs from node " << *it << " is going to be chopped" << endl;
+   cout << "Tree before chopping: ";
    prePrint(tree);
-   cout << "tree2 : ";
-   prePrint(tree2);
-   cout << "After grafting tree to tree2 on node " << *graftIt << " :" << endl;
 
-   preIt = graftIt.firstChild();
-   cout << "In the position of its first child" << endl;
-   tree2.graftAt(graftIt, preIt, tree);
-   prePrint(tree2);*/
+   tree.chop(it);
+
+   cout << "Tree after chopping: ";
+   prePrint(tree);
+}
+
+// _____________________________________________________________________________
+
+void eraseTest(Tree<int>& tree, Tree<int>::PreOrderIterator& it) {
+   cout << "ERASE TEST" << endl;
+   cout << "We are going to delete node " << *it << endl;
+   cout << "Tree before erasing: ";
+   prePrint(tree);
+
+   tree.erase(it);
+
+   cout << "Tree after erasing: ";
+   prePrint(tree);
+}
+
+// _____________________________________________________________________________
+
+void graftBackTest(Tree<int>& tree, Tree<int>& adoptTree, const Tree<int>::PreOrderIterator& it) {
+   cout << "GRAFT-BACK TEST" << endl;
+   cout << "Tree : ";
+   prePrint(tree);
+   cout << "We are going to graft as the last child of node: " << *it << endl;
+   cout << "The following tree: ";
+   prePrint(adoptTree);
+
+   tree.graftBack(it, adoptTree);
+
+   cout << "After grafting the resulting tree is: ";
+   prePrint(tree);
+}
+
+
+// *****************************************************************************
+//                                    MAIN
+// *****************************************************************************
+
+// Some examples of how to use a Tree structure
+int main(int argc, char** argv) {
+   // Build the tree example found in wikipedia -> http://en.wikipedia.org/wiki/Binary_tree
+   Tree<int> tree = wikipediaTree();
+   Tree<int> tree2 = tree;
+
+   Tree<int>::PreOrderIterator eraseIt, graftIt;
+
+   eraseIt = tree.preBegin(); // Root Node 2
+   eraseIt = eraseIt.firstChild(); // Node 7
+   graftIt = eraseIt.firstChild(); // Node 2
+   eraseIt = eraseIt.nextChild(); // Node 6
+
+   //chopTest(tree, eraseIt);
+   //eraseTest(tree, eraseIt);
+   //graftBackTest(tree, tree2, graftIt);
 
    return 0;
 }

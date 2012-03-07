@@ -913,6 +913,20 @@ class TreeIterator {
 
       //________________________________________________________________________
 
+
+      /**
+       * Custom constructor.
+       *
+       * Due to copy constructor elision, this method has been made public, but
+       * it should never be used by the client. Clients don't have to deal with
+       * 'TreeNodes' the less they know about it, the better for everyone.
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
+      inline TreeIterator(TreeNode<T>* data);
+
+      //________________________________________________________________________
+
       /**
        * Copy constructor.
        *
@@ -1093,19 +1107,6 @@ class TreeIterator {
       //                            PROTECTED METHODS
       // =======================================================================
 
-
-      /**
-       * Custom constructor.
-       *
-       * This method has been made protected because clients shouldn't have access
-       * to it (they don't need to know anything about the structure holding the
-       * data).
-       *
-       * @param data Pointer to the 'TreeNode' that this iterator will point.
-       */
-      inline TreeIterator(TreeNode<T>* data);
-
-      //________________________________________________________________________
 
       /**
        * Get the pointer to the 'TreeNode' pointed by 'this' tree iterator.
@@ -1401,6 +1402,15 @@ class Tree<T>::PreOrderIterator : public TreeIterator<T> {
       //________________________________________________________________________
 
       /**
+       * Custom constructor.
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
+      PreOrderIterator(TreeNode<T>* data);
+
+      //________________________________________________________________________
+
+      /**
        * Copy constructor.
        *
        * @param source Source pre-order iterator to be copied.
@@ -1534,19 +1544,6 @@ class Tree<T>::PreOrderIterator : public TreeIterator<T> {
       friend PreOrderIterator Tree<T>::pushBackChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
       friend PreOrderIterator Tree<T>::pushFrontChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
       friend PreOrderIterator Tree<T>::insertChild(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, const T& data) throw(std::bad_alloc);
-
-
-      // =======================================================================
-      //                            PRIVATE METHODS
-      // =======================================================================
-
-
-      /**
-       * Custom constructor.
-       *
-       * @param data Pointer to the 'TreeNode' that this iterator will point.
-       */
-      PreOrderIterator(TreeNode<T>* data);
 
 
       // =======================================================================
@@ -1855,6 +1852,19 @@ class Tree<T>::PostOrderIterator : public TreeIterator<T> {
       //________________________________________________________________________
 
       /**
+       * Custom constructor.
+       *
+       * Note that when the post-order iterator is constructed, the iterator actually
+       * doesn't point to the node pointed by the iterator given, instead, it points
+       * to the first node to be retreived in post-order.
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
+      PostOrderIterator(TreeNode<T>* data);
+
+      //________________________________________________________________________
+
+      /**
        * Copy constructor.
        *
        * Note that the pointer that this iterator will point to after the construction
@@ -1996,23 +2006,6 @@ class Tree<T>::PostOrderIterator : public TreeIterator<T> {
 
       friend PostOrderIterator Tree<T>::postBegin() const;
       friend PostOrderIterator Tree<T>::postEnd() const;
-
-
-      // =======================================================================
-      //                            PRIVATE METHODS
-      // =======================================================================
-
-
-      /**
-       * Custom constructor.
-       *
-       * Note that when the post-order iterator is constructed, the iterator actually
-       * doesn't point to the node pointed by the iterator given, instead, it points
-       * to the first node to be retreived in post-order.
-       *
-       * @param data Pointer to the 'TreeNode' that this iterator will point.
-       */
-      PostOrderIterator(TreeNode<T>* data);
 
 
       // =======================================================================

@@ -158,6 +158,7 @@ class TreeNode {
 
 
       friend class Tree<T>;
+      friend class TreeIterator<T>;
 
 
       // =======================================================================
