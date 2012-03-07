@@ -19,6 +19,22 @@
 
 using namespace std;
 
+template <class T>
+void prePrint(const Tree<T>& tree) {
+   for(typename Tree<T>::PreOrderIterator it(tree.preBegin()); it != tree.preEnd(); ++it) {
+      cout << *it << " ";
+   }
+   cout << endl;
+}
+
+template <class T>
+void postPrint(const Tree<T>& tree) {
+   for(typename Tree<T>::PostOrderIterator it(tree.postBegin()); it != tree.postEnd(); ++it) {
+      cout << *it << " ";
+   }
+   cout << endl;
+}
+
 int main(int argc, char** argv) {
    Tree<int>::PreOrderIterator it;
    Tree<int>::PreOrderIterator graftIt;
@@ -111,37 +127,37 @@ int main(int argc, char** argv) {
    // Attach to the first child
    tree.pushBackChild(preIt, 4);
 
-   tree.prePrint();
-   tree.postPrint();
-   //tree2.prePrint();
+   //prePrint(tree);
+   //postPrint(tree);
+   //prePrint(tree2);
 
-   /*tree.prePrint();
+   /*prePrint(tree);
    tree.chop(startEraseNode);
-   tree.prePrint();*/
+   prePrint(tree);*/
 
-   /*tree.prePrint();
+   /*prePrint(tree);
    tree.erase(startEraseNode);
-   tree.prePrint();*/
+   prePrint(tree);*/
 
-   /*tree.prePrint();
+   /*prePrint(tree);
 
    preIt = startEraseNode.firstChild();
    preIt = startEraseNode.nextChild();
 
    tree.insertChild(startEraseNode, preIt, 200);
 
-   tree.prePrint();*/
+   prePrint(tree);*/
 
    /*cout << "tree : ";
-   tree.prePrint();
+   prePrint(tree);
    cout << "tree2 : ";
-   tree2.prePrint();
+   prePrint(tree2);
    cout << "After grafting tree to tree2 on node " << *graftIt << " :" << endl;
 
    preIt = graftIt.firstChild();
    cout << "In the position of its first child" << endl;
    tree2.graftAt(graftIt, preIt, tree);
-   tree2.prePrint();*/
+   prePrint(tree2);*/
 
    return 0;
 }

@@ -18,13 +18,16 @@
 
 #include "RootNotErasableException.h"
 #include "TreeNode.h"
-#include <iterator>
 #include <map>
 #include <new>
 #include <stack>
 
 
-// Forward declarations
+// *****************************************************************************
+//                             FORWARD DELCARATIONS
+// *****************************************************************************
+
+
 template <class T>
 class TreeIterator;
 
@@ -40,13 +43,16 @@ class Tree {
       class PreOrderIterator;
       class PostOrderIterator;
 
-      Tree();
+      inline Tree();
       Tree(const T& data) throw (std::bad_alloc);
       Tree(const Tree<T>& source) throw(std::bad_alloc);
 
-      virtual ~Tree();
+      inline virtual ~Tree();
 
       Tree<T>& operator=(const Tree<T>& rhs) throw(std::bad_alloc);
+
+      bool operator==(const Tree<T>& rhs) const;
+      inline bool operator!=(const Tree<T>& rhs) const;
 
       // If the root node doesn't exists, it creates a new one, otherwise it just
       // changes the value of the root node
@@ -80,33 +86,15 @@ class Tree {
       // Use with care, iterator must be valid
       void graftAt(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, Tree<T>& adoptTree);
 
-      void prePrint() {
-         if(_root != NULL) {
-            for(PreOrderIterator it(preBegin()); it != preEnd(); ++it) {
-               std::cout << *it << " ";
-            }
-            std::cout << std::endl;
-         }
-      }
-
-      void postPrint() {
-         if(_root != NULL) {
-            for(PostOrderIterator it(postBegin()); it != postEnd(); ++it) {
-               std::cout << *it << " ";
-            }
-            std::cout << std::endl;
-         }
-      }
-
-   protected:
-      // Nothing yet
    private:
-      TreeNode<T>* _root;
-
+      // PRIVATE METHODS
       inline Tree(TreeNode<T>* root);
 
       void clone(const Tree<T>& source) throw(std::bad_alloc);
       inline void clean();
+
+      // PRIVATE FIELDS
+      TreeNode<T>* _root;
 };
 
 
@@ -138,7 +126,6 @@ Tree<T>::Tree(const T& data) throw (std::bad_alloc) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- To be implemented as a copy-on-write
 template <class T>
 Tree<T>::Tree(const Tree<T>& source) throw(std::bad_alloc) : _root(NULL) {
    try {
@@ -158,7 +145,6 @@ Tree<T>::Tree(const Tree<T>& source) throw(std::bad_alloc) : _root(NULL) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- To be implemented with chop
 template <class T>
 Tree<T>::~Tree() {
    clean();
@@ -166,7 +152,6 @@ Tree<T>::~Tree() {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- To be implemented as a copy-on-write
 template <class T>
 Tree<T>& Tree<T>::operator=(const Tree<T>& rhs) throw(std::bad_alloc) {
    if(this != &rhs) {
@@ -176,6 +161,29 @@ Tree<T>& Tree<T>::operator=(const Tree<T>& rhs) throw(std::bad_alloc) {
    }
 
    return *this;
+}
+
+//______________________________________________________________________________
+
+template <class T>
+bool Tree<T>::operator==(const Tree<T>& rhs) const {
+   if(this == &rhs) return true;
+   if(empty() != rhs.empty()) return false;
+
+   PreOrderIterator thisIt = this->preBegin();
+   PreOrderIterator rhsIt = rhs.preBegin();
+   for(; rhsIt != rhs.preEnd(); ++thisIt, ++rhsIt)
+      if(*thisIt != *rhsIt || thisIt.nChildren() != rhsIt.nChildren())
+         return false;
+
+   return true;
+}
+
+//______________________________________________________________________________
+
+template <class T>
+bool Tree<T>::operator!=(const Tree<T>& rhs) const {
+   return !(*this == rhs);
 }
 
 //______________________________________________________________________________
@@ -415,7 +423,6 @@ Tree<T>::Tree(TreeNode<T>* root) {
 
 //______________________________________________________________________________
 
-// DEPRECATED <- To be implemented as a copy-on-write
 template <class T>
 void Tree<T>::clone(const Tree<T>& source) throw(std::bad_alloc) {
    // If the tree already had data stored, delete it
@@ -505,13 +512,12 @@ void Tree<T>::clean() {
 template <class T>
 class TreeIterator {
    public:
-      TreeIterator();
-      TreeIterator(const TreeIterator<T>& source);
+      inline TreeIterator();
+      inline TreeIterator(const TreeIterator<T>& source);
 
-      virtual ~TreeIterator();
+      inline virtual ~TreeIterator();
 
-      TreeIterator<T>& operator=(const TreeIterator<T>& rhs);
-      TreeIterator<T>& operator=(TreeNode<T>* rhs);
+      inline TreeIterator<T>& operator=(const TreeIterator<T>& rhs);
 
       // Abstract
       virtual TreeIterator<T>& operator++() = 0;
@@ -525,35 +531,43 @@ class TreeIterator {
 
       inline T* operator->() const;
       inline T& operator*() const;
-      // Careful when using it, the pointer returned MUST NOT be modified
-      inline TreeNode<T>* getPointer();
-      inline void setPointer(TreeNode<T>* newPointer);
 
       // We return a reference to a TreeIterator to be able to return a derived
       // class.
       // THIS TWO METHODS MUST NEVER BE USED TO MODIFY THE RETURNED VALUE
       // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
-      virtual TreeIterator<T>& parent() = 0;
+      inline virtual TreeIterator<T>& parent() = 0;
 
       inline unsigned int nChildren();
       virtual TreeIterator<T>& firstChild() = 0;
       virtual TreeIterator<T>& lastChild() = 0;
       virtual TreeIterator<T>& nextChild() = 0;
       virtual TreeIterator<T>& previousChild() = 0;
-   //protected:
-      TreeIterator(TreeNode<T>* data);
+
+   protected:
+      inline TreeIterator(TreeNode<T>* data);
+
+      // Careful when using it, the pointer returned MUST NOT be modified
+      inline TreeNode<T>* getPointer();
+      inline void setPointer(TreeNode<T>* newPointer);
+
+      inline TreeIterator<T>& operator=(TreeNode<T>* rhs);
 
       // _currentChild need not be initialized because it should always be called
       // by firstChild() or lastChild(), meaning that its value will be override
       // during each call, furthermore, this iterator shouldn't be copied when using
       // operator= because we want to enforce the use of firstChild() and lastChild()
       typename std::list< TreeNode<T>* >::iterator _currentChild;
-   //private:
+
+   private:
+      // FRIEND CLASSES
       friend class Tree<T>;
 
-      TreeNode<T>* _pointer;
-
+      // PRIVATE METHODS
       inline void clone(const TreeIterator<T>& rhs);
+
+      // PRIVATE FIELDS
+      TreeNode<T>* _pointer;
 };
 
 
@@ -686,30 +700,37 @@ void TreeIterator<T>::clone(const TreeIterator<T>& rhs) {
 template <class T>
 class Tree<T>::PreOrderIterator : public TreeIterator<T> {
    public:
-      PreOrderIterator();
+      inline PreOrderIterator();
       // Converting constructor
-      PreOrderIterator(const PostOrderIterator& postIt);
-      PreOrderIterator(const PreOrderIterator& source);
+      inline PreOrderIterator(const PostOrderIterator& postIt);
+      inline PreOrderIterator(const PreOrderIterator& source);
 
-      virtual ~PreOrderIterator();
+      inline virtual ~PreOrderIterator();
 
       PreOrderIterator& operator=(const TreeIterator<T>& rhs);
 
       virtual PreOrderIterator& operator++();
-      PreOrderIterator operator++(int notUsed);
+      inline PreOrderIterator operator++(int notUsed);
 
-      virtual TreeIterator<T>& parent();
+      inline virtual TreeIterator<T>& parent();
 
       virtual TreeIterator<T>& firstChild();
       virtual TreeIterator<T>& lastChild();
       virtual TreeIterator<T>& nextChild();
       virtual TreeIterator<T>& previousChild();
-   //private:
+
+   private:
+      // FRIEND METHODS
       friend PreOrderIterator Tree<T>::preBegin() const;
       friend PreOrderIterator Tree<T>::preEnd() const;
+      friend PreOrderIterator Tree<T>::pushBackChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
+      friend PreOrderIterator Tree<T>::pushFrontChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
+      friend PreOrderIterator Tree<T>::insertChild(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, const T& data) throw(std::bad_alloc);
 
+      // PRIVATE METHODS
       PreOrderIterator(TreeNode<T>* data);
 
+      // PRIVATE FIELDS
       std::stack< std::pair<TreeNode<T>*, typename std::list< TreeNode<T>* >::iterator> > _pathStack;
 };
 
@@ -918,43 +939,36 @@ TreeIterator<T>& Tree<T>::PreOrderIterator::previousChild() {
 template <class T>
 class Tree<T>::PostOrderIterator : public TreeIterator<T> {
    public:
-      PostOrderIterator();
+      inline PostOrderIterator();
       // Converting constructor
       PostOrderIterator(const PreOrderIterator& preIt);
       // If we have to return an iterator from a function
       // DO NOT ever construct it using this constructor, use the one that's private
       PostOrderIterator(const PostOrderIterator& source);
 
-      virtual ~PostOrderIterator();
+      inline virtual ~PostOrderIterator();
 
       PostOrderIterator& operator=(const PostOrderIterator& rhs);
 
       virtual PostOrderIterator& operator++();
-      PostOrderIterator operator++(int notUsed);
+      inline PostOrderIterator operator++(int notUsed);
 
-      void printStack() {
-         std::stack< std::pair<TreeNode<T>*, int> > auxStack(_pathStack);
-
-         std::cout << "\nStack state: " << std::endl;
-         while(!auxStack.empty()) {
-            std::cout << "(" << *auxStack.top().first << ", " << auxStack.top().second << ")" << std::endl;
-            auxStack.pop();
-         }
-         std::cout << std::endl;
-      }
-
-      virtual TreeIterator<T>& parent();
+      inline virtual TreeIterator<T>& parent();
 
       virtual TreeIterator<T>& firstChild();
       virtual TreeIterator<T>& lastChild();
       virtual TreeIterator<T>& nextChild();
       virtual TreeIterator<T>& previousChild();
-   //private:
+
+   private:
+      // FRIEND METHODS
       friend PostOrderIterator Tree<T>::postBegin() const;
       friend PostOrderIterator Tree<T>::postEnd() const;
 
+      // PRIVATE METHODS
       PostOrderIterator(TreeNode<T>* data);
 
+      // PRIVATE FIELDS
       std::stack< std::pair<TreeNode<T>*, typename std::list< TreeNode<T>* >::iterator> > _pathStack;
       bool _justCreated;
 };

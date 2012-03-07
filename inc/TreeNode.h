@@ -17,9 +17,6 @@
 #define __TREE_NODE_H__
 
 #include <iostream>
-#include <stdexcept>
-#include <stdlib.h>
-#include <cstring>
 #include <list>
 
 
@@ -45,36 +42,38 @@ std::ostream& operator<< (std::ostream &out, const TreeNode<T>& node);
 //                                   HEADER
 // *****************************************************************************
 
+/*
+ * Operator= and copy constructor won't be implemented in this class. When a
+ * tree node is copied, the references to parent and children shouldn't be copied;
+ * instead, new memory should be allocated. 
+ * This responsibility lies on the tree structure, hence, the tree will be doing
+ * that job; no need for us to implement such methods here.
+ */
 
 template <class T>
 class TreeNode {
    public:
-      TreeNode();
-      TreeNode(const T& data);
-      TreeNode(const T& data, TreeNode<T>* parent);
-      // Careful!!! It copies the references
-      TreeNode(const TreeNode<T>& source);
+      inline TreeNode();
+      inline TreeNode(const T& data);
+      inline TreeNode(const T& data, TreeNode<T>* parent);
 
-      virtual ~TreeNode();
-
-      // WE NEED TO RETURN AN ITERATOR
-      TreeNode<T>& operator=(const TreeNode<T>& rhs);
-      TreeNode<T>& operator=(const T& rightData);
+      inline ~TreeNode();
 
       friend std::ostream& operator<< <T>(std::ostream& out, const TreeNode<T>& node);
 
       inline TreeNode<T>* const parent() const;
       inline int nChildren();
+
    private:
+      // FRIEND CLASSES
+      friend class Tree<T>;
+      friend class TreeIterator<T>;
+
+      // PRIVATE FIELDS
       T _data;
       TreeNode<T>* _parent;
       typename std::list< TreeNode<T>* >::iterator _childIt;
       std::list< TreeNode<T>* > _children;
-
-      friend class Tree<T>;
-      friend class TreeIterator<T>;
-
-      void clone(const TreeNode<T>& source);
 };
 
 
@@ -106,42 +105,9 @@ TreeNode<T>::TreeNode(const T& data, TreeNode<T>* parent) : _data(data), _parent
 
 //______________________________________________________________________________
 
-// COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
-template <class T>
-TreeNode<T>::TreeNode(const TreeNode<T>& source) :
-   _data(source._data),
-   _parent(source._parent),
-   _childIt(source._childIt),
-   _children(source._children)
-{
-   // Nothing to do
-}
-
-//______________________________________________________________________________
-
 template <class T>
 TreeNode<T>::~TreeNode() {
    // Nothing to do
-   // The destructors of the objects contained are called here automatically
-}
-
-//______________________________________________________________________________
-
-template <class T>
-TreeNode<T>& TreeNode<T>::operator=(const TreeNode<T>& rhs) {
-   if(this != &rhs)
-      clone(rhs);
-
-   return *this;
-}
-
-//______________________________________________________________________________
-
-template <class T>
-TreeNode<T>& TreeNode<T>::operator=(const T& rightData) {
-   _data = rightData;
-
-   return *this;
 }
 
 //______________________________________________________________________________
@@ -165,17 +131,6 @@ TreeNode<T>* const TreeNode<T>::parent() const {
 template <class T>
 int TreeNode<T>::nChildren() {
    return _children.size();
-}
-
-//______________________________________________________________________________
-
-// COMPLETE COPY OF A TREE NODE, POINTERS ARE COPIED!! BE CAREFUL USING IT
-template <class T>
-void TreeNode<T>::clone(const TreeNode<T>& source) {
-   _data = source._data;
-   _parent = source._parent;
-   _childIt = source._childIt;
-   _children = source._children;
 }
 
 #endif
