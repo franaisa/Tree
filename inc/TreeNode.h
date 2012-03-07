@@ -65,14 +65,23 @@ std::ostream& operator<< (std::ostream &out, const TreeNode<T>& node);
 template <class T>
 class TreeNode {
    public:
+      // =======================================================================
+      //                     CONSTRUCTORS AND DESTRUCTORS
+      // =======================================================================
+
+
       /** Default constructor. */
       inline TreeNode();
+
+      //________________________________________________________________________
 
       /**
        * Custom constructor.
        * @param data Data to initialize the data content of the node.
        */
       inline TreeNode(const T& data);
+
+      //________________________________________________________________________
 
       /**
        * Custom constructor.
@@ -81,8 +90,16 @@ class TreeNode {
        */
       inline TreeNode(const T& data, TreeNode<T>* parent);
 
+      //________________________________________________________________________
+
       /** Destructor. */
       inline ~TreeNode();
+
+
+      // =======================================================================
+      //                               OPERATORS
+      // =======================================================================
+
 
       /**
        * Ostream operator.
@@ -91,11 +108,23 @@ class TreeNode {
        */
       friend std::ostream& operator<< <T>(std::ostream& out, const TreeNode<T>& node);
 
+
+      // =======================================================================
+      //                            ELEMENT ACCESS
+      // =======================================================================
+
+
       /**
        * Get the parent node of this node.
        * @return A pointer to the parent node.
        */
       inline TreeNode<T>* const parent() const;
+
+
+      // =======================================================================
+      //                               CAPACITY
+      // =======================================================================
+
 
       /**
        * Get how many children this node has.
@@ -104,21 +133,28 @@ class TreeNode {
       inline unsigned int nChildren() const;
 
    private:
-      // ==============
-      // FRIEND CLASSES
-      // ==============
+      // =======================================================================
+      //                            FRIEND CLASSES
+      // =======================================================================
+
 
       friend class Tree<T>;
 
-      // ==============
-      // PRIVATE FIELDS
-      // ==============
+
+      // =======================================================================
+      //                            PRIVATE FIELDS
+      // =======================================================================
+
 
       /** Data to be stored in the node. */
       T _data;
 
+      //________________________________________________________________________
+
       /** Pointer to parent node. */
       TreeNode<T>* _parent;
+
+      //________________________________________________________________________
 
       /**
        * Iterator to  parent children list.
@@ -131,6 +167,8 @@ class TreeNode {
        * the Tree class (to which this node belongs to).
        */
       typename std::list< TreeNode<T>* >::iterator _childIt;
+
+      //________________________________________________________________________
 
       /** List of pointers to children nodes.  */
       std::list< TreeNode<T>* > _children;

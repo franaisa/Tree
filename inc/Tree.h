@@ -24,7 +24,11 @@
 
 
 // *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
 //                             FORWARD DELCARATIONS
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
 
@@ -33,73 +37,382 @@ class TreeIterator;
 
 
 // *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
 //                                  TREE HEADER
 // *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
 
-
+/**
+ * This class represents a traditional tree structure.
+ *
+ * It is meant to be used as a topology tree or search tree (backtracking,
+ * branch and bound). This is the main reason why children nodes have been
+ * implemented using lists, because we are going to be accessing the nodes in a
+ * secuential fashion.
+ *
+ * Note that the ostream and istream operators haven't been implemented. The reason
+ * is because a tree can be travelled in many different ways. The client is free
+ * to implement an ostream operator however he wants (it shouldn't be a problem
+ * since there are pre-order and post-order iterators available).
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ * @since 27/01/2012
+ */
 template <class T>
 class Tree {
    public:
+      // =======================================================================
+      //                          INNER DECLARATIONS
+      // =======================================================================
+
+
       class PreOrderIterator;
       class PostOrderIterator;
 
+
+      // =======================================================================
+      //                     CONSTRUCTORS AND DESTRUCTORS
+      // =======================================================================
+
+
+      /** Default constructor */
       inline Tree();
+
+      //________________________________________________________________________
+
+      /**
+       * Custom constructor.
+       * 
+       * @param data Data to be assigned to the root node.
+       * @throws std::bad_alloc Thrown if memory allocation for the root node fails.
+       */
       Tree(const T& data) throw (std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /**
+       * Copy constructor.
+       * 
+       * @param source Source tree.
+       * @throws std::bad_alloc Thrown if memory allocation fails when copying.
+       */
       Tree(const Tree<T>& source) throw(std::bad_alloc);
 
+      //________________________________________________________________________
+
+      /** Destructor. */
       inline virtual ~Tree();
 
+
+      // =======================================================================
+      //                               OPERATORS
+      // =======================================================================
+
+
+      /**
+       * Assignment operator.
+       *
+       * @param rhs Right hand side tree to be assigned.
+       * @return A reference to 'this' tree.
+       * @throws std::bad_alloc Thrown if memory allocation fails when copying.
+       */
       Tree<T>& operator=(const Tree<T>& rhs) throw(std::bad_alloc);
 
+      //________________________________________________________________________
+
+      /**
+       * Equality operator.
+       *
+       * @param rhs Right hand side tree to be compared.
+       * @return 'true' if both trees have the same nodes with the same values.
+       */
       bool operator==(const Tree<T>& rhs) const;
+
+      //________________________________________________________________________
+
+      /**
+       * Inequality operator.
+       *
+       * @param rhs Right hand side tree to be compared.
+       * @return 'true' if the trees are different.
+       */
       inline bool operator!=(const Tree<T>& rhs) const;
 
-      // If the root node doesn't exists, it creates a new one, otherwise it just
-      // changes the value of the root node
-      void setRoot(const T& data) throw(std::bad_alloc);
 
-      // Return iterator to child inserted
-      Tree<T>::PreOrderIterator pushFrontChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
-      Tree<T>::PreOrderIterator pushBackChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
-      // Use with care, iterator must be valid
-      Tree<T>::PreOrderIterator insertChild(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, const T& data) throw(std::bad_alloc);
+      // =======================================================================
+      //                               ITERATORS
+      // =======================================================================
 
-      // Member functions to obtain iterators
-      // Note that they could have been implemented returning just one kind of
-      // iterator and then using a conversion constructor if the iterator to match
-      // is different. That approach would mean the creation of one more temporary
-      // variable, that's why we haven't used it.
+
+      /**
+       * Retrieve a pre-order iterator pointing to the root node.
+       *
+       * Although this method can also be assigned to a post-order iterator due
+       * to the existance of conversion constructors, it should NEVER be done.
+       * That's the reason why we have specific methods to retrieve each kind of
+       * iterator. 
+       *
+       * @return 'PreOrderIterator' to the root node.
+       */
       inline PreOrderIterator preBegin() const;
+
+      //________________________________________________________________________
+
+      /**
+       * Retrieve a pre-order iterator that marks the end of the tree.
+       *
+       * Although this method can also be assigned to a post-order iterator due
+       * to the existance of conversion constructors, it should NEVER be done.
+       * That's the reason why we have specific methods to retrieve each kind of
+       * iterator. 
+       * 
+       * @return 'PreOrderIterator' that marks the end of the tree.
+       */
       inline PreOrderIterator preEnd() const;
+
+      //________________________________________________________________________
+
+      /**
+       * Retrieve a post-order iterator pointing to the root node.
+       *
+       * Although this method can also be assigned to a pre-order iterator due
+       * to the existance of conversion constructors, it should NEVER be done.
+       * That's the reason why we have specific methods to retrieve each kind of
+       * iterator. 
+       * 
+       * @return 'PostOrderIterator' to the root node.
+       */
       inline PostOrderIterator postBegin() const;
+
+      //________________________________________________________________________
+
+      /**
+       * Retrieve a post-order iterator pointing to the root node.
+       *
+       * Although this method can also be assigned to a pre-order iterator due
+       * to the existance of conversion constructors, it should NEVER be done.
+       * That's the reason why we have specific methods to retrieve each kind of
+       * iterator. 
+       * 
+       * @return 'PostOrderIterator' to the root node.
+       */
       inline PostOrderIterator postEnd() const;
 
+
+      // =======================================================================
+      //                               CAPACITY
+      // =======================================================================
+
+
+      /**
+       * Check if the tree is empty (has no nodes).
+       *
+       * @return 'true' if the tree is empty, 'false' otherwise.
+       */
       inline bool empty() const;
 
-      // Member functions to erase nodes
+
+      // =======================================================================
+      //                               MODIFIERS
+      // =======================================================================
+
+
+      /**
+       * Set the root value.
+       *
+       * If the tree is empty, this method creates a new root node and assigns
+       * the given value, otherwise, it just assigns the value.
+       *
+       * @param data Data to be assigned to the root node.
+       * @throws std::bad_alloc Thrown if memory allocation for the root node fails.
+       */
+      void setRoot(const T& data) throw(std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /**
+       * Given a value and an iterator to a node, create a new child at the front of the children list.
+       *
+       * @param parent Iterator to the node to which we want to attach the new node to be created.
+       * @param data Data to be assigned to the new node to be created.
+       * @return 'PreOrderIterator' to the new children node created.
+       * @throws std::bad_alloc Thrown if memory allocation for the children node fails.
+       */
+      Tree<T>::PreOrderIterator pushFrontChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /**
+       * Given a value and an iterator to a node, create a new child at the end of the children list.
+       *
+       * @param parent Iterator to the node to which we want to attach the new node to be created.
+       * @param data Data to be assigned to the new node to be created.
+       * @return 'PreOrderIterator' to the new children node created.
+       * @throws std::bad_alloc Thrown if memory allocation for the children node fails.
+       */
+      Tree<T>::PreOrderIterator pushBackChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /**
+       * Given a value and an iterator to a node, create a new child and insert in the position
+       * given by the second given iterator.
+       *
+       * Note that this method doesn't do any kind iterator validity checking.
+       * This means that the client is responsible for passing a valid iterator
+       * to the method to insert the new node to be created.
+       *
+       * @param parent Iterator to the node to which we want to attach the new node to be created.
+       * @param childNode Iterator to the child node where we want to insert the new node to be created.
+       * @param data Data to be assigned to the new node to be created.
+       * @return 'PreOrderIterator' to the new child node created.
+       * @throws std::bad_alloc Thrown if memory allocation for the children node fails.
+       */
+      Tree<T>::PreOrderIterator insertChild(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, const T& data) throw(std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /**
+       * Erase a single node.
+       *
+       * Given an iterator to a node, this method erases the node and relinks its
+       * direct descendats to the erased node's parent.
+       *
+       * @param node Iterator to the node that we want to erase.
+       * @throws RootNotErasableException Thrown if the given iterator points to
+       * the root node (because the root node can't/shouldn't be erased).
+       */
       void erase(TreeIterator<T>& node) throw(RootNotErasableException);
+
+      //________________________________________________________________________
+
+      /**
+       * Prune a subtree.
+       *
+       * Given an iterator, this method prunes the subtree hanging from the node
+       * pointed by the iterator and returns the tree. Note that this method doesn't
+       * make a copy of the subtree, it literally prunes it.
+       *
+       * @param rootNode Iterator to the node from which the subtree that we want
+       * to prune hangs.
+       * @return The subtree that hangs from the node pointed by 'rootNode'.
+       */
       Tree<T> prune(TreeIterator<T>& rootNode);
+
+      //________________________________________________________________________
+
+      /**
+       * Erase a subtree.
+       *
+       * Given an iterator, this method erases the subtree hanging from the node
+       * pointed by the iterator. Note that memory is actually deallocated, unlike
+       * with the prune method.
+       *
+       * @param rootNode Iterator to the node from which the subtree that we want
+       * to erase hangs.
+       */
       void chop(TreeIterator<T>& rootNode);
 
+      //________________________________________________________________________
+
+      /**
+       * Graft a tree and attach it to the front of the children list of a given node.
+       *
+       * This method attaches to the front of the children list of the node pointed
+       * by the given iterator a whole tree. Note that the given tree is actually
+       * modified, which means that after the execution of this method, the given
+       * tree will be empty.
+       *
+       * @param parent Iterator to the node where we want to graft the given tree.
+       * @param tree Tree to be grafted.
+       */
       void graftFront(const TreeIterator<T>& parent, Tree<T>& tree);
+
+      //________________________________________________________________________
+
+      /**
+       * Graft a tree and attach it to the back of the children list of a given node.
+       *
+       * This method attaches to the back of the children list of the node pointed
+       * by the given iterator a whole tree. Note that the given tree is actually
+       * modified, which means that after the execution of this method, the given
+       * tree will be empty.
+       *
+       * @param parent Iterator to the node where we want to graft the given tree.
+       * @param tree Tree to be grafted.
+       */
       void graftBack(const TreeIterator<T>& parent, Tree<T>& tree);
-      // Use with care, iterator must be valid
+
+      //________________________________________________________________________
+
+      /**
+       * Graft a tree and insert it into the children list of a given node.
+       *
+       * This method inserts a whole tree as a child of a node given by an iterator
+       * in the position of a second given iterator. Note that the given tree is actually
+       * modified, which means that after the execution of this method, the given
+       * tree will be empty. Also note that this method doesn't do any kind of
+       * range checking, which means that the client is responsible for passing
+       * a valid iterator as an argument.
+       *
+       * @param parent Iterator to the node where we want to graft the given tree.
+       * @param childNode Iterator to the child node where we want to graft the given tree.
+       * @param tree Tree to be grafted.
+       */
       void graftAt(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, Tree<T>& adoptTree);
 
    private:
-      // PRIVATE METHODS
+      // =======================================================================
+      //                            PRIVATE METHODS
+      // =======================================================================
+
+
+      /**
+       * Custom constructor.
+       *
+       * This constructor has been made private because the client should never
+       * have to deal with TreeNodes (as a matter of fact, it should never be
+       * allowed to handle them).
+       *
+       * @param root Pointer to the tree node that is going to be the root node.
+       */
       inline Tree(TreeNode<T>* root);
 
+      //________________________________________________________________________
+
+      /**
+       * Make a full copy of 'this' object.
+       *
+       * @param source Tree that is going to be copied.
+       * @throws std::bad_alloc Thrown if memory allocation fails when copying. 
+       */
       void clone(const Tree<T>& source) throw(std::bad_alloc);
+
+      //________________________________________________________________________
+
+      /** Deallocate any memory allocated by the tree */
       inline void clean();
 
-      // PRIVATE FIELDS
+
+      // =======================================================================
+      //                            PRIVATE FIELDS
+      // =======================================================================
+
+
+      /** Pointer to the root node */
       TreeNode<T>* _root;
 };
 
 
 // *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
 //                              TREE IMPLEMENTATION
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
 
@@ -184,6 +497,41 @@ bool Tree<T>::operator==(const Tree<T>& rhs) const {
 template <class T>
 bool Tree<T>::operator!=(const Tree<T>& rhs) const {
    return !(*this == rhs);
+}
+
+//______________________________________________________________________________
+
+template <class T>
+typename Tree<T>::PreOrderIterator Tree<T>::preBegin() const {
+   return PreOrderIterator(_root);
+}
+
+//______________________________________________________________________________
+
+template <class T>
+typename Tree<T>::PreOrderIterator Tree<T>::preEnd() const {
+   return PreOrderIterator(NULL);
+}
+
+//______________________________________________________________________________
+
+template <class T>
+typename Tree<T>::PostOrderIterator Tree<T>::postBegin() const {
+   return PostOrderIterator(_root);
+}
+
+//______________________________________________________________________________
+
+template <class T>
+typename Tree<T>::PostOrderIterator Tree<T>::postEnd() const {
+   return PostOrderIterator(NULL);
+}
+
+//______________________________________________________________________________
+
+template <class T>
+bool Tree<T>::empty() const {
+   return _root == NULL ? true : false;
 }
 
 //______________________________________________________________________________
@@ -278,41 +626,6 @@ typename Tree<T>::PreOrderIterator Tree<T>::insertChild(const TreeIterator<T>& p
    child->_childIt = --it;
 
    return PreOrderIterator(child);
-}
-
-//______________________________________________________________________________
-
-template <class T>
-typename Tree<T>::PreOrderIterator Tree<T>::preBegin() const {
-   return PreOrderIterator(_root);
-}
-
-//______________________________________________________________________________
-
-template <class T>
-typename Tree<T>::PreOrderIterator Tree<T>::preEnd() const {
-   return PreOrderIterator(NULL);
-}
-
-//______________________________________________________________________________
-
-template <class T>
-typename Tree<T>::PostOrderIterator Tree<T>::postBegin() const {
-   return PostOrderIterator(_root);
-}
-
-//______________________________________________________________________________
-
-template <class T>
-typename Tree<T>::PostOrderIterator Tree<T>::postEnd() const {
-   return PostOrderIterator(NULL);
-}
-
-//______________________________________________________________________________
-
-template <class T>
-bool Tree<T>::empty() const {
-   return _root == NULL ? true : false;
 }
 
 //______________________________________________________________________________
