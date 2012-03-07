@@ -24,11 +24,7 @@
 
 
 // *****************************************************************************
-// *****************************************************************************
-// *****************************************************************************
 //                             FORWARD DELCARATIONS
-// *****************************************************************************
-// *****************************************************************************
 // *****************************************************************************
 
 
@@ -39,7 +35,27 @@ class TreeIterator;
 // *****************************************************************************
 // *****************************************************************************
 // *****************************************************************************
-//                                  TREE HEADER
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                              TREE HEADER                              ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
 // *****************************************************************************
 // *****************************************************************************
 // *****************************************************************************
@@ -59,7 +75,6 @@ class TreeIterator;
  *
  * @author Francisco Aisa García
  * @version 0.1
- * @since 27/01/2012
  */
 template <class T>
 class Tree {
@@ -78,7 +93,11 @@ class Tree {
       // =======================================================================
 
 
-      /** Default constructor */
+      /**
+       * Default constructor.
+       *
+       * It creates an empty tree.
+       */
       inline Tree();
 
       //________________________________________________________________________
@@ -410,7 +429,27 @@ class Tree {
 // *****************************************************************************
 // *****************************************************************************
 // *****************************************************************************
-//                              TREE IMPLEMENTATION
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                          TREE IMPLEMENTATION                          ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
 // *****************************************************************************
 // *****************************************************************************
 // *****************************************************************************
@@ -819,73 +858,364 @@ void Tree<T>::clean() {
 
 
 // *****************************************************************************
-//                            TREE-ITERATOR HEADER
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                         TREE-ITERATOR HEADER                          ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
+/**
+ * Tree Iterator abstract class used to implement any kind of iterator to iterate
+ * on a tree structure.
+ *
+ * This class has all the functionality that one would expect from a normal iterator.
+ * Because an iterator to a tree is very special kind of iterator, it also implements
+ * some other features to facilitate navigation through a tree structure.
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ */
 template <class T>
 class TreeIterator {
    public:
+      // =======================================================================
+      //                     CONSTRUCTORS AND DESTRUCTORS
+      // =======================================================================
+
+
+      /**
+       * Default constructor.
+       *
+       * It sets the tree iterator pointer to NULL.
+       */
       inline TreeIterator();
+
+      //________________________________________________________________________
+
+      /**
+       * Copy constructor.
+       *
+       * @param source Source tree iterator.
+       */
       inline TreeIterator(const TreeIterator<T>& source);
 
+      //________________________________________________________________________
+
+      /** Destructor. */
       inline virtual ~TreeIterator();
 
+
+      // =======================================================================
+      //                               OPERATORS
+      // =======================================================================
+
+
+      /**
+       * Assignment operator.
+       *
+       * @param rhs Right hand side tree iterator to be assigned.
+       * @return A reference to 'this' tree iterator.
+       */
       inline TreeIterator<T>& operator=(const TreeIterator<T>& rhs);
 
-      // Abstract
-      virtual TreeIterator<T>& operator++() = 0;
-      // Because TreeIterator is abstract we can't implement operator++(int) like this
-      // because a reference to TreeIterator<T> can't be returned, hence, we need
-      // to implement it, in each derived class independently
-      //virtual TreeIterator<T> operator++(int notUsed) = 0;
+      //________________________________________________________________________
 
+      /**
+       * Abstract pre-increment operator.
+       *
+       * This operator will make the iterator move through the starting position
+       * in a predetermined way such as pre-order, in-order, post-order...
+       *
+       * Please note that because 'TreeIterator' is an abstract class, operator++(int)
+       * won't be a part of its interface since a 'TreeIterator' can't be returned.
+       * This operator MUST be implemented in every derived class in order to
+       * sustain coherence.
+       *
+       * @return A reference to 'this' tree iterator.
+       */
+      virtual TreeIterator<T>& operator++() = 0;
+
+      //________________________________________________________________________
+
+      /**
+       * Equality operator.
+       *
+       * @param rhs Right hand side tree iterator to be compared.
+       * @return 'true' if both iterators point to the same tree node, 'false'
+       * otherwise.
+       */
       inline bool operator==(const TreeIterator<T>& rhs) const;
+
+      //________________________________________________________________________
+
+      /**
+       * Inequality operator.
+       *
+       * @param rhs Right hand side tree iterator to be comared.
+       * @return 'true' if the iterators to be compared are different, 'false'
+       * otherwise.
+       */
       inline bool operator!=(const TreeIterator<T>& rhs) const;
 
+      //________________________________________________________________________
+
+      /**
+       * Reference operator.
+       *
+       * @return A pointer to the data contained in the node pointed by 'this' iterator.
+       */
       inline T* operator->() const;
+
+      //________________________________________________________________________
+
+      /**
+       * Dereference pointer.
+       *
+       * @return The data contained in the node pointed by 'this' iterator.
+       */
       inline T& operator*() const;
 
-      // We return a reference to a TreeIterator to be able to return a derived
-      // class.
-      // THIS TWO METHODS MUST NEVER BE USED TO MODIFY THE RETURNED VALUE
-      // BECAUSE A STATIC LOCAL VALUE IS RETURNED.
+
+      // =======================================================================
+      //                            ELEMENT ACCESS
+      // =======================================================================
+
+      /**
+       * Returns a tree iterator to the parent node of the node pointed by 'this'
+       * iterator if any.
+       *
+       * @return A reference to a tree node. The reason why we return a reference
+       * is so we can use polymorphism (because 'TreeIterator' is abstract). This
+       * method MUST NEVER be used to modify the returned value, because static
+       * value is returned.
+       */
       inline virtual TreeIterator<T>& parent() = 0;
 
-      inline unsigned int nChildren();
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the first child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A reference to a tree node. The reason why we return a reference
+       * is so we can use polymorphism (because 'TreeIterator' is abstract). This
+       * method MUST NEVER be used to modify the returned value, because static
+       * value is returned.
+       */
       virtual TreeIterator<T>& firstChild() = 0;
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the last child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A reference to a tree node. The reason why we return a reference
+       * is so we can use polymorphism (because 'TreeIterator' is abstract). This
+       * method MUST NEVER be used to modify the returned value, because static
+       * value is returned.
+       */
       virtual TreeIterator<T>& lastChild() = 0;
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the next child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The next child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       *
+       * @return A reference to a tree node. The reason why we return a reference
+       * is so we can use polymorphism (because 'TreeIterator' is abstract). This
+       * method MUST NEVER be used to modify the returned value, because static
+       * value is returned.
+       */
       virtual TreeIterator<T>& nextChild() = 0;
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the previous child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The previous child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       * 
+       * @return A reference to a tree node. The reason why we return a reference
+       * is so we can use polymorphism (because 'TreeIterator' is abstract). This
+       * method MUST NEVER be used to modify the returned value, because static
+       * value is returned.
+       */
       virtual TreeIterator<T>& previousChild() = 0;
 
+
+      // =======================================================================
+      //                               CAPACITY
+      // =======================================================================
+
+      /**
+       * Get the number of children that the node pointed by 'this' tree iterator
+       * has.
+       *
+       * @return An unsigned integer indicating the number of children that current
+       * tree node has.
+       */
+      inline unsigned int nChildren();
+
    protected:
+      // =======================================================================
+      //                            PROTECTED METHODS
+      // =======================================================================
+
+
+      /**
+       * Custom constructor.
+       *
+       * This method has been made protected because clients shouldn't have access
+       * to it (they don't need to know anything about the structure holding the
+       * data).
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
       inline TreeIterator(TreeNode<T>* data);
 
-      // Careful when using it, the pointer returned MUST NOT be modified
+      //________________________________________________________________________
+
+      /**
+       * Get the pointer to the 'TreeNode' pointed by 'this' tree iterator.
+       *
+       * Note that a pointer to a 'TreeNode' is returned (and not a const pointer).
+       * Be careful when using it, the pointer returned MUST NOT be modified.
+       *
+       * @return A pointer to the 'TreeNode' pointed by 'this' tree iterator.
+       */
       inline TreeNode<T>* getPointer();
+
+      //________________________________________________________________________
+
+      /**
+       * Set the value of the pointer pointed by 'this' tree iterator.
+       *
+       * @param newPointer Pointer to the new 'TreeNode' that 'this' tree iterator
+       * will point to.
+       */
       inline void setPointer(TreeNode<T>* newPointer);
 
+      //________________________________________________________________________
+
+      /**
+       * Assignment operator (with a given pointer to a 'TreeNode'.
+       *
+       * A copy of the pointer is made, meaning that the current tree iterator
+       * will point to the given pointer on the right hand side.
+       *
+       * @param rhs Right hand side 'TreeNode' to be assigned. Note that we don't
+       * assign a 'TreeIterator'.
+       * @return A reference to 'this' tree iterator.
+       */
       inline TreeIterator<T>& operator=(TreeNode<T>* rhs);
 
-      // _currentChild need not be initialized because it should always be called
-      // by firstChild() or lastChild(), meaning that its value will be override
-      // during each call, furthermore, this iterator shouldn't be copied when using
-      // operator= because we want to enforce the use of firstChild() and lastChild()
+
+      // =======================================================================
+      //                            PROTECTED FIELDS
+      // =======================================================================
+
+
+      /**
+       * Iterator to the parent list, that indicates which position occupies the
+       * node pointed by 'this' tree iterator.
+       *
+       * _currentChild need not be initialized because it should always be called
+       * by firstChild() or lastChild(), meaning that its value will be override
+       * during each call, furthermore, this iterator shouldn't be copied when using
+       * operator= because we want to enforce the use of firstChild() and lastChild()
+       */
       typename std::list< TreeNode<T>* >::iterator _currentChild;
 
    private:
-      // FRIEND CLASSES
+      // =======================================================================
+      //                            FRIEND CLASSES
+      // =======================================================================
+
+
       friend class Tree<T>;
 
-      // PRIVATE METHODS
+
+      // =======================================================================
+      //                            PRIVATE METHODS
+      // =======================================================================
+
+
+      /**
+       * Clone the content of a given tree iterator to 'this' tree iterator.
+       *
+       * @param rhs Right hand side tree iterator to be cloned.
+       */
       inline void clone(const TreeIterator<T>& rhs);
 
-      // PRIVATE FIELDS
+
+      // =======================================================================
+      //                            PRIVATE FIELDS
+      // =======================================================================
+
+
+      /** Pointer to the 'TreeNode' that holds the data */
       TreeNode<T>* _pointer;
 };
 
 
 // *****************************************************************************
-//                       TREE-ITERATOR IMPLEMENTATION
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                     TREE-ITERATOR IMPLEMENTATION                      ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
 
@@ -967,6 +1297,13 @@ T& TreeIterator<T>::operator*() const {
 //______________________________________________________________________________
 
 template <class T>
+unsigned int TreeIterator<T>::nChildren() {
+   return _pointer->_children.size();
+}
+
+//______________________________________________________________________________
+
+template <class T>
 TreeNode<T>* TreeIterator<T>::getPointer() {
    return _pointer;
 }
@@ -976,13 +1313,6 @@ TreeNode<T>* TreeIterator<T>::getPointer() {
 template <class T>
 void TreeIterator<T>::setPointer(TreeNode<T>* newPointer) {
    _pointer = newPointer;
-}
-
-//______________________________________________________________________________
-
-template <class T>
-unsigned int TreeIterator<T>::nChildren() {
-   return _pointer->_children.size();
 }
 
 //______________________________________________________________________________
@@ -1006,50 +1336,255 @@ void TreeIterator<T>::clone(const TreeIterator<T>& rhs) {
 
 
 // *****************************************************************************
-//                            PRE-ORDER ITERATOR HEADER
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                       PRE-ORDER ITERATOR HEADER                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
-
+/**
+ * Pre-order iterator to iterate on a tree structure.
+ *
+ * This class allows the user to iterate through a tree in a pre-order fashion. It
+ * also lets the user navigate through descendants and ancestors in a secuential fashion.
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ */
 template <class T>
 class Tree<T>::PreOrderIterator : public TreeIterator<T> {
    public:
+      // =======================================================================
+      //                     CONSTRUCTORS AND DESTRUCTORS
+      // =======================================================================
+
+
+      /**
+       * Default constructor.
+       *
+       * It makes the iterator pointer point to NULL.
+       */
       inline PreOrderIterator();
-      // Converting constructor
+
+      //________________________________________________________________________
+
+      /**
+       * Conversion constructor.
+       *
+       * It transforms a post-order iterator into a pre-order iterator.
+       *
+       * @param postIt 'PostOrderIterator' to be converted.
+       */
       inline PreOrderIterator(const PostOrderIterator& postIt);
+
+      //________________________________________________________________________
+
+      /**
+       * Copy constructor.
+       *
+       * @param source Source pre-order iterator to be copied.
+       */
       inline PreOrderIterator(const PreOrderIterator& source);
 
+      //________________________________________________________________________
+
+      /** Destructor. */
       inline virtual ~PreOrderIterator();
 
+
+      // =======================================================================
+      //                               OPERATORS
+      // =======================================================================
+
+
+      /**
+       * Assignment operator.
+       *
+       * A copy of the pointer contained in the right hand side iterator is done,
+       * which means that 'this' iterator will point to the same node.
+       *
+       * @param rhs Right hand side tree iterator to be assigned.
+       * @return A reference to 'this' 'PreOrderIterator'.
+       */
       PreOrderIterator& operator=(const TreeIterator<T>& rhs);
 
+      //________________________________________________________________________
+
+      /**
+       * Pre-increment operator.
+       *
+       * Each time this operator is executed, the next node (following the pre-order
+       * fashion) will be retrieved.
+       *
+       * @return A reference to 'this' 'PreOrderIterator'.
+       */
       virtual PreOrderIterator& operator++();
+
+      //________________________________________________________________________
+
+      /**
+       * Post-increment operator.
+       *
+       * Each time this operator is executed, the next node (following the pre-order
+       * fashion) will be retrieved.
+       *
+       * @param notUsed This argument is not used.
+       * @return A 'PreOrderIterator' to the node that the iterator pointed to before
+       * iterating to the next node.
+       */
       inline PreOrderIterator operator++(int notUsed);
 
+
+      // =======================================================================
+      //                            ELEMENT ACCESS
+      // =======================================================================
+
+
+      /**
+       * Returns a tree iterator to the parent node of the node pointed by 'this'
+       * iterator if any.
+       *
+       * @return A 'PreOrderIterator' to the parent node.
+       */
       inline virtual TreeIterator<T>& parent();
 
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the first child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A 'PreOrderIterator' to the first child of the node pointed by
+       * 'this' iterator.
+       */
       virtual TreeIterator<T>& firstChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the last child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A 'PreOrderIterator' to the last child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& lastChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the next child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The next child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       *
+       * @return A 'PreOrderIterator' to the next child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& nextChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the previous child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The previous child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       *
+       * @return A 'PreOrderIterator' to the previous child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& previousChild();
 
    private:
-      // FRIEND METHODS
+      // =======================================================================
+      //                            FRIEND METHODS
+      // =======================================================================
+
+
       friend PreOrderIterator Tree<T>::preBegin() const;
       friend PreOrderIterator Tree<T>::preEnd() const;
       friend PreOrderIterator Tree<T>::pushBackChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
       friend PreOrderIterator Tree<T>::pushFrontChild(const TreeIterator<T>& parent, const T& data) throw(std::bad_alloc);
       friend PreOrderIterator Tree<T>::insertChild(const TreeIterator<T>& parent, const TreeIterator<T>& childNode, const T& data) throw(std::bad_alloc);
 
-      // PRIVATE METHODS
+
+      // =======================================================================
+      //                            PRIVATE METHODS
+      // =======================================================================
+
+
+      /**
+       * Custom constructor.
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
       PreOrderIterator(TreeNode<T>* data);
 
-      // PRIVATE FIELDS
+
+      // =======================================================================
+      //                            PRIVATE FIELDS
+      // =======================================================================
+
+
+      /** Needed to know which is the next node to visit when using operator++ */
       std::stack< std::pair<TreeNode<T>*, typename std::list< TreeNode<T>* >::iterator> > _pathStack;
 };
 
 
 // *****************************************************************************
-//                       PRE-ORDER ITERATOR IMPLEMENTATION
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                   PRE-ORDER ITERATOR IMPLEMENTATION                   ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
 // Parent sets _pointer to NULL
@@ -1244,50 +1779,285 @@ TreeIterator<T>& Tree<T>::PreOrderIterator::previousChild() {
 
 
 
-// *****************************************************************************
-//                           POST-ORDER ITERATOR HEADER
-// *****************************************************************************
 
 
+
+
+
+// *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                      POST-ORDER ITERATOR HEADER                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
+// *****************************************************************************
+
+/**
+ * Post-order iterator to iterate on a tree structure.
+ *
+ * This class allows the user to iterate through a tree in a post-order fashion. It
+ * also lets the user navigate through descendants and ancestors in a secuential fashion.
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ */
 template <class T>
 class Tree<T>::PostOrderIterator : public TreeIterator<T> {
    public:
+      // =======================================================================
+      //                     CONSTRUCTORS AND DESTRUCTORS
+      // =======================================================================
+
+
+      /**
+       * Default constructor.
+       *
+       * It makes the iterator pointer point to NULL.
+       */
       inline PostOrderIterator();
-      // Converting constructor
+
+      //________________________________________________________________________
+
+      /**
+       * Conversion constructor.
+       *
+       * It transforms a pre-order iterator into a post-order iterator. In the tree
+       * class, when new nodes are inserted/created, pre-order iterators to them
+       * are returned. For the sake of uniformity, post-order iterators can be used
+       * with those methods thanks to this conversion constructor. Use it with care
+       * since is not as efficient as using a pre-order iterator (due to the construction
+       * of a temporary iterator).
+       *
+       * @param preIt 'PreOrderIterator' to be converted.
+       */
       PostOrderIterator(const PreOrderIterator& preIt);
-      // If we have to return an iterator from a function
-      // DO NOT ever construct it using this constructor, use the one that's private
+
+      //________________________________________________________________________
+
+      /**
+       * Copy constructor.
+       *
+       * Note that the pointer that this iterator will point to after the construction
+       * won't be the one to which the source iterator points to. Instead, this
+       * iterator will point to the first node to be retreived in post-order (starting
+       * from the node pointed by the given iterator).
+       *
+       * @param source Source post-order iterator to be copied.
+       */
       PostOrderIterator(const PostOrderIterator& source);
 
+      //________________________________________________________________________
+
+      /** Destructor. */
       inline virtual ~PostOrderIterator();
 
+
+      // =======================================================================
+      //                               OPERATORS
+      // =======================================================================
+
+
+      /**
+       * Assignment operator.
+       *
+       * Note that the pointer that this iterator will point to after the assignment
+       * won't be the one to which the right hand side iterator points to. Instead, this
+       * iterator will point to the first node to be retreived in post-order (starting
+       * from the node pointed by the given iterator).
+       *
+       * Also, if the assigned iterator to the right has just been copy constructed,
+       * then, the iterator will actually point to the node that the given iterator
+       * points to.
+       *
+       * @param rhs Right hand side 'PostOrderIterator' to be assigned.
+       * @return A reference to 'this' 'PostOrderIterator'.
+       */
       PostOrderIterator& operator=(const PostOrderIterator& rhs);
 
+      //________________________________________________________________________
+
+      /**
+       * Pre-increment operator.
+       *
+       * Each time this operator is executed, the next node (following the post-order
+       * fashion) will be retrieved.
+       *
+       * @return A reference to 'this' 'PostOrderIterator'.
+       */
       virtual PostOrderIterator& operator++();
+
+      //________________________________________________________________________
+
+      /**
+       * Post-increment operator.
+       *
+       * Each time this operator is executed, the next node (following the post-order
+       * fashion) will be retrieved.
+       *
+       * @param notUsed This argument is not used.
+       * @return A 'PostOrderIterator' to the node that the iterator pointed to before
+       * iterating to the next node.
+       */
       inline PostOrderIterator operator++(int notUsed);
 
+
+      // =======================================================================
+      //                            ELEMENT ACCESS
+      // =======================================================================
+
+
+      /**
+       * Returns a tree iterator to the parent node of the node pointed by 'this'
+       * iterator if any.
+       *
+       * @return A 'PostOrderIterator' to the parent node.
+       */
       inline virtual TreeIterator<T>& parent();
 
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the first child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A 'PostOrderIterator' to the first child of the node pointed by
+       * 'this' iterator.
+       */
       virtual TreeIterator<T>& firstChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the last child node of the node pointed by 'this'
+       * iterator.
+       *
+       * @return A 'PostOrderIterator' to the last child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& lastChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the next child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The next child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       *
+       * @return A 'PostOrderIterator' to the next child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& nextChild();
+
+      //________________________________________________________________________
+
+      /**
+       * Returns a tree iterator to the previous child node of the node pointed by 'this'
+       * iterator.
+       *
+       * The previous child returned will depend on the last access we made to the
+       * current node. Please note that this method doesn't do any kind of range
+       * checking, which means that the client is responsible for iterating through
+       * the node's children safely.
+       *
+       * @return A 'PostOrderIterator' to the previous child of the node pointed by 'this'
+       * iterator.
+       */
       virtual TreeIterator<T>& previousChild();
 
    private:
-      // FRIEND METHODS
+      // =======================================================================
+      //                            FRIEND METHODS
+      // =======================================================================
+
+
       friend PostOrderIterator Tree<T>::postBegin() const;
       friend PostOrderIterator Tree<T>::postEnd() const;
 
-      // PRIVATE METHODS
+
+      // =======================================================================
+      //                            PRIVATE METHODS
+      // =======================================================================
+
+
+      /**
+       * Custom constructor.
+       *
+       * Note that when the post-order iterator is constructed, the iterator actually
+       * doesn't point to the node pointed by the iterator given, instead, it points
+       * to the first node to be retreived in post-order.
+       *
+       * @param data Pointer to the 'TreeNode' that this iterator will point.
+       */
       PostOrderIterator(TreeNode<T>* data);
 
-      // PRIVATE FIELDS
+
+      // =======================================================================
+      //                            PRIVATE FIELDS
+      // =======================================================================
+
+
+      /** Needed to know which is the next node to visit when using operator++ */
       std::stack< std::pair<TreeNode<T>*, typename std::list< TreeNode<T>* >::iterator> > _pathStack;
+
+      //________________________________________________________________________
+
+      /**
+       * Because copy constructor elision occurs, this field will make sure that
+       * the state of the iterator is correct.
+       */
       bool _justCreated;
 };
 
 // *****************************************************************************
-//                       POST-ORDER ITERATOR IMPLEMENTATION
+// *****************************************************************************
+// *****************************************************************************
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                  POST-ORDER ITERATOR IMPLEMENTATION                   ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// ***                                                                       ***
+// *****************************************************************************
+// *****************************************************************************
 // *****************************************************************************
 
 // Parent sets _pointer to NULL
