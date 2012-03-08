@@ -18,8 +18,22 @@
 
 #include <stdexcept>
 
+/**
+ * This class represents any exception related with a Tree structure.
+ *
+ * Every exception thrown out of a tree class inherits from this class.
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ */
 class TreeGenericException : public std::logic_error {
    public:
+
+      /**
+       * Custom constructor.
+       *
+       * @param what_arg Description of the problem that is causing the exception.
+       */
       explicit TreeGenericException(const std::string& what_arg);
 };
 

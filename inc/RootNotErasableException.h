@@ -18,8 +18,21 @@
 
 #include "TreeGenericException.h"
 
+/**
+ * This exception is thrown whenever the user attempts to erase the root node of
+ * a tree.
+ *
+ * @author Francisco Aisa García
+ * @version 0.1
+ */
 class RootNotErasableException : public TreeGenericException {
    public:
+
+      /**
+       * Custom constructor.
+       *
+       * @param what_arg Description of the problem that is causing the exception.
+       */
       explicit RootNotErasableException(const std::string& what_arg);
 };
 
