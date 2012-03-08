@@ -73,6 +73,11 @@ class TreeIterator;
  * to implement an ostream operator however he wants (it shouldn't be a problem
  * since there are pre-order and post-order iterators available).
  *
+ * Because 'TreeIterator', 'TreeNode' and 'Tree' are tightly bound together, I 
+ * decided to code them using a friend relationship between them (the three of
+ * them). Although this decision breaks a bit the rules of OOP, it makes the tree
+ * structure behave more efficiently.
+ *
  * @author Francisco Aisa García
  * @version 0.1
  */
