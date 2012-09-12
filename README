@@ -9,19 +9,18 @@ LICENSE
 GENERAL NOTES
 =============
 
-This project implements a Tree template in C++. The current version is being  
-developed for GNU/Linux.
+This project implements a Tree template in C++ under GNU/Linux.
 
-To compile it, a Makefile has been attached.
+To compile it, a Makefile has been attached. Just type "make" inside the 
+project's root directory and let the magic begin.
 
-Please note, that the given source code is now on the Beta Testing phase. If you
-find any bugs, please notify me (:
+The code is in the Beta Testing Phase, so if you find any bugs, please don't 
+hesitate to contact me.
 
 The current version is 0.1. The main aim of this version is have a robust and 
 fully functional tree structure, mainly for pedagogical purposes. 
 
-Version 0.2 will implement speed optimizations and template simplification. I 
-will try to get this new version up and going by September 2012.
+Version 0.2 will implement speed optimizations and template simplification.
 
 LICENSE
 =======
