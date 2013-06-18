@@ -1,0 +1,11 @@
+# *****************************************************************************************
+# Ignore anything irrelevant from windows
+# *****************************************************************************************
+
+/Windows/*
+!/Windows/Debug/
+!/Windows/Tree/
+!/Windows/Tree.sln
+
+/Windows/Debug/*
+/Windows/Tree/Debug/*
